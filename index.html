@@ -368,7 +368,7 @@ function fly(b){var tb=$('tot');if(!tb)return;var r=b.getBoundingClientRect(),fr
 function open(h){var st=S.scrollTop;S.innerHTML=h;S.scrollTop=st;S.classList.add('open');SH.classList.add('open')}
 function shut(){S.classList.remove('open');SH.classList.remove('open');tr=false}
 function toast(m){var e=$('toast');e.textContent=m;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(function(){e.classList.remove('on')},2600)}
-function login(){open('<h3>'+t('google')+'</h3><p class="note">'+t('ln')+'</p><label>'+t('lm')+'</label><input type="email" id="em" placeholder="nombre@gmail.com"><div class="err" id="er"></div><button class="cta" data-a="dologin">'+t('lc')+'</button><button class="cta wa" data-a="close">'+t('ls')+'</button>')}
+function login(){if(CLOUD){open('<h3>'+t('google')+'</h3><p class="note">Puedes ver el menú sin cuenta. Para hacer tu pedido entra con tu cuenta de Google: así te enviamos el comprobante a tu correo.</p><button class="cta" data-a="glogin">Continuar con Google</button><button class="cta wa" data-a="close">'+t('close')+'</button>');return}open('<h3>'+t('google')+'</h3><p class="note">'+t('ln')+'</p><label>'+t('lm')+'</label><input type="email" id="em" placeholder="nombre@gmail.com"><div class="err" id="er"></div><button class="cta" data-a="dologin">'+t('lc')+'</button><button class="cta wa" data-a="close">'+t('ls')+'</button>')}
 
 var AT={a_t:["Mi cuenta","My account","Minha conta"],a_p:["Mi perfil","My profile","Meu perfil"],a_s:["Inicio de sesión y seguridad","Login & security","Login e segurança"],a_c:["Mis cupones","My coupons","Meus cupons"],a_m:["Métodos de pago","Payment methods","Métodos de pagamento"],a_o:["Mis pedidos","My orders","Meus pedidos"],a_l:["Configuración e idioma","Settings & language","Configurações e idioma"],
 a_q:["Quiénes somos","About us","Quem somos"],a_tc:["Términos y condiciones","Terms & conditions","Termos e condições"],a_pr:["Privacidad y protección de datos","Privacy & data protection","Privacidade e proteção de dados"],a_mn:["Nuestro menú","Our menu","Nosso cardápio"],a_b:["‹ Volver","‹ Back","‹ Voltar"],
@@ -425,7 +425,7 @@ var DEV=(function(){try{var d=localStorage.getItem('pk_dev');if(!d){d='d'+Math.r
 function regSave(){try{var o={};Object.keys(REG).forEach(function(k){if(REG[k].own.indexOf('seed')!=0)o[k]=REG[k]});localStorage.setItem('pk_reg',JSON.stringify(o))}catch(e){}}
 function owner(){return user?user.email:DEV}
 function phD(p){var d=String(p||'').replace(/\D/g,'');if(d.length==11&&d.indexOf('507')==0)d=d.slice(3);return d}
-function phErr(p){var d=phD(p);if(d.length!=8)return A('ph_bad');var r=REG[d];if(r&&r.own==DEV&&user){r.own=user.email;regSave()}if(r&&r.own!=owner())return A('ph_taken');return''}
+function phErr(p){var d=phD(p);if(d.length!=8)return A('ph_bad');if(CLOUD)return'';var r=REG[d];if(r&&r.own==DEV&&user){r.own=user.email;regSave()}if(r&&r.own!=owner())return A('ph_taken');return''}
 function phReg(p,nm){var d=phD(p);if(d.length!=8)return;Object.keys(REG).forEach(function(k){if(REG[k].own==owner()&&k!=d)delete REG[k]});REG[d]={nm:nm||'',own:owner()};regSave()}
 AT.ph_bad=["El teléfono debe tener 8 dígitos (ej. 6000-0000).","The phone must have 8 digits (e.g. 6000-0000).","O telefone deve ter 8 dígitos (ex. 6000-0000)."];AT.ph_taken=["Este número ya está registrado con otra cuenta. Usa tu propio número o inicia sesión con la cuenta a la que pertenece.","This number is already registered to another account. Use your own number or sign in to the account it belongs to.","Este número já está registrado em outra conta. Use seu número ou entre na conta a que pertence."];AT.p_yr=["Año","Year","Ano"];AT.p_phn=["Tu número de teléfono es tu identificador: solo una cuenta puede usarlo.","Your phone number is your identifier: only one account can use it.","Seu telefone é seu identificador: só uma conta pode usá-lo."];
 function ding(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();var t0=AC.currentTime;[[880,0],[1318,.09]].forEach(function(n){var o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.value=n[0];g.gain.setValueAtTime(0,t0+n[1]);g.gain.linearRampToValueAtTime(.18,t0+n[1]+.02);g.gain.exponentialRampToValueAtTime(.001,t0+n[1]+.28);o.connect(g);g.connect(AC.destination);o.start(t0+n[1]);o.stop(t0+n[1]+.3)});if(navigator.vibrate)navigator.vibrate(25)}catch(e){}}
@@ -442,7 +442,7 @@ AT.a_nt=["Notas o sugerencias para tu pedido","Notes or requests for your order"
 
 var FEE=1.5,ADDR=[],selA=0,aid=0,ed=null,edOn=false,locFrom='home',entered=false;
 try{ADDR=JSON.parse(localStorage.getItem('pk_addr')||'[]');selA=+localStorage.getItem('pk_sel')||0;ADDR.forEach(function(a){aid=Math.max(aid,a.id)})}catch(e){ADDR=[]}
-function persist(){try{localStorage.setItem('pk_addr',JSON.stringify(ADDR));localStorage.setItem('pk_sel',selA)}catch(e){}}
+function persist(){try{localStorage.setItem('pk_addr',JSON.stringify(ADDR));localStorage.setItem('pk_sel',selA)}catch(e){}cloudAddr()}
 function curA(){for(var i=0;i<ADDR.length;i++)if(ADDR[i].id==selA)return ADDR[i];return null}
 function applyA(){var a=curA();loc=a?a.loc:null;fm.ad=a?a.ref:''}
 function fee(){return typ=='d'?FEE:0}
@@ -572,7 +572,10 @@ document.addEventListener('click',function(e){
  if(a=='srev'){var L2=getReqs();L2.forEach(function(r){if(r.id==b.dataset.i&&r.t==+b.dataset.t){r.st='revoked';tx({k:'dec',id:r.id,t:r.t,st:'revoked',role:r.role})}});setReqs(L2);toast('Dispositivo quitado');admin();return}
  if(a=='spinchg'){var pc=($('pn_c').value||'').trim(),pn=($('pn_n').value||'').trim();if(pc!=PINS.owner){$('pnr').textContent='El PIN actual no es correcto';return}if(!/^\d{4,8}$/.test(pn)){$('pnr').textContent='Usa de 4 a 8 números';return}PINS.owner=pn;try{localStorage.setItem('pk_pins',JSON.stringify(PINS))}catch(e){}toast('PIN cambiado');admin();return}
  if(a=='sblogin'){sbLogin(b);return}
- if(a=='sbrol'){SBROL=b.dataset.r;sbLoginScr();return}
+ if(a=='sbrol'){if(b.dataset.r=='motorizado')sbDrvScr();else sbLoginScr();return}
+ if(a=='sbpedir'){sbPedir(b);return}
+ if(a=='sbcancel'){sbEspOff();SB.rpc('cancelar_mi_solicitud').then(function(){sbRolScr()});return}
+ if(a=='solr'){b.disabled=true;var sx=b.dataset.x;SB.rpc('resolver_solicitud',{p_solicitud:b.dataset.i,p_accion:sx}).then(function(r){toast(r.error?r.error.message:sx=='aprobar'?'Motorizado aprobado':sx=='rechazar'?'Solicitud rechazada':'Solicitud cancelada');return Promise.all([sbSolLoad(),sbTeam()])}).then(function(){admin()});return}
  if(a=='sbback'){sbRolScr();return}
  if(a=='pushon'){pushOn();return}
  if(a=='sbretry'){cloudStaff();return}
@@ -585,9 +588,9 @@ document.addEventListener('click',function(e){
  if(a=='tab'){tab=b.dataset.k;home();return}
  if(a=='set'){settings();return}
  if(a=='sub'){sub(b.dataset.k);return}
- if(a=='psave'){var n=$('pn').value.trim(),pp=$('pp').value.trim();fm.ph=pp;var pe=phErr(pp);if(!n){$('ps').textContent=A('e1');$('ps').style.color='#ff9aa8';return}if(pe){$('ps').textContent=pe;$('ps').style.color='#ff9aa8';return}if(user&&n)user.name=n;fm.nm=n;fm.ph=pp;var dd=$('pbd').value,mm=$('pbm').value;prof.bd=dd&&mm?mm+'-'+('0'+dd).slice(-2):'';prof.by=$('pby').value;phReg(pp,n);profSave();profWel=false;$('ps').style.color='';$('ps').textContent=A('a_sd');return}
+ if(a=='psave'){var n=$('pn').value.trim(),pp=$('pp').value.trim();fm.ph=pp;var pe=phErr(pp);if(!n){$('ps').textContent=A('e1');$('ps').style.color='#ff9aa8';return}if(pe){$('ps').textContent=pe;$('ps').style.color='#ff9aa8';return}if(user&&n)user.name=n;fm.nm=n;fm.ph=pp;var dd=$('pbd').value,mm=$('pbm').value;prof.bd=dd&&mm?mm+'-'+('0'+dd).slice(-2):'';prof.by=$('pby').value;phReg(pp,n);profSave();cloudPerfil();profWel=false;$('ps').style.color='';$('ps').textContent=A('a_sd');return}
  if(a=='delask'){open(back()+'<h3>'+A('a_del')+'</h3><p class="note">'+A('a_sure')+'</p><button class="cta red" data-a="deldo">'+A('a_yes')+'</button><button class="cta wa" data-a="sub" data-k="s">'+A('a_no')+'</button>');return}
- if(a=='deldo'){user=null;cards=[];shut();home();return}
+ if(a=='deldo'){if(CLOUD){gOut('Cerramos tu sesión. Para borrar tus datos escríbenos por WhatsApp al +507 6349-8263.');return}user=null;cards=[];shut();home();return}
  if(a=='cadd'){if(cards.length>=8){sub('m');S.insertAdjacentHTML('beforeend','<p class="err">'+A('a_max')+'</p>');return}cbrand='Visa';cform();return}
  if(a=='cbr'){cbrand=b.dataset.b;[].forEach.call(S.querySelectorAll('[data-a=cbr]'),function(x){x.classList.toggle('on',x===b)});return}
  if(a=='cok'){var n=($('cn').value||'').replace(/\D/g,''),nm2=($('ck').value||'').trim(),ex=($('ce').value||'').replace(/\D/g,''),cv=($('cv').value||'').replace(/\D/g,''),E=$('er');
@@ -612,7 +615,8 @@ document.addEventListener('click',function(e){
  if(a=='login'){login();return}
  if(a=='dologin'){var m=$('em').value.trim();if(!/^[^@\s]+@gmail\.com$/i.test(m)){$('er').textContent=t('le');return}
   var n=m.split('@')[0];user={email:m,name:n.charAt(0).toUpperCase()+n.slice(1)};shut();home();profWel=true;setTimeout(function(){sub('p')},350);return}
- if(a=='logout'){user=null;shut();home();return}
+ if(a=='glogin'){gLogin();return}
+ if(a=='logout'){if(CLOUD){gOut();return}user=null;shut();home();return}
  if(a=='send'){askNP();cap();
   var er0=validate();if(er0){cartSheet(er0);return}
   if(!termsOk){$('er').textContent=A('tos_err');return}
@@ -621,7 +625,7 @@ document.addEventListener('click',function(e){
   var its=items(),dk=today(),o={note:(fm.nt||'').trim(),cafe:hasBk(its),id:++uid,day:dk,num:orders.filter(function(x){return x.day==dk}).length+1,time:new Date(),type:typ,name:fm.nm.trim(),phone:fm.ph.trim(),ref:fm.ad.trim(),loc:typ=='d'?loc:null,pay:pm,ps:pm=='cash'?'cod':'rev',proof:proofData,card:null,items:its,sub:itot(its),fee:fee(),svc:svc(),email:em,t:itot(its)+fee()+svc(),s:0,drv:null,rate:0,tags:[]};if(CLOUD){cloudSend(o,b);return}phReg(o.phone,o.name);proofData=null;clearInterval(pTm);orders.unshift(o);sentOk(o);return}
  if(a=='atab'){admTab=b.dataset.t;admin();return}
 
- if(a=='topay'){cap();var er=validate();if(er){cartSheet(er);return}profSave();payScreen();return}
+ if(a=='topay'){cap();if(CLOUD&&!user){login();return}var er=validate();if(er){cartSheet(er);return}profSave();payScreen();return}
  if(a=='payback'){cartSheet();return}
  if(a=='payback2'){payFrom=false;payScreen();return}
  if(a=='payadd'){payFrom=true;cbrand='Visa';if(cards.length>=8){payScreen(A('a_max'));return}cform();return}
@@ -654,13 +658,14 @@ document.addEventListener('click',function(e){
  if(a=='pcash'){clearInterval(pTm);proofData=null;paySel='cash';payScreen();return}
  if(a=='pretry'){proofScreen(proofFor);return}
  if(a=='prfz'){var oz=ord(b.dataset.id);open('<img src="'+oz.proof+'" style="width:100%;border-radius:12px" alt=""><button class="cta" data-a="close" style="margin-top:10px">Cerrar</button>');return}
- if(a=='nsys'){if(CLOUD){pushOn().then(function(){sub('nt')});return}try{Notification.requestPermission().then(function(r){toast(r=='granted'?A('n_sys_ok'):A('n_sys_no'));sub('nt')})}catch(e){toast(A('n_sys_no'))}return}
+ if(a=='nsys'){if(CLOUD){if(!user){login();return}pushOn().then(function(){sub('nt')});return}try{Notification.requestPermission().then(function(r){toast(r=='granted'?A('n_sys_ok'):A('n_sys_no'));sub('nt')})}catch(e){toast(A('n_sys_no'))}return}
  if(a=='ntog'){NT[b.dataset.k]=NT[b.dataset.k]?0:1;nSave();sub('nt');return}
  if(a=='ntest'){var to=orders.filter(function(x){return !x.demo})[0]||{type:'d',s:0};var tmp=Object.assign({},to,{demo:0});tmp.s=(nLast&&nLast.s<3)?nLast.s+1:0;pushN(tmp);return}
  if(a=='nclose'){nMin();return}
  if(a=='nopen'){if(nLast){var o9=nLast.o;$('isle').classList.remove('on');$('npush').innerHTML=nHtml(nIco(o9,nLast.s),nTitle(o9,nLast.s),NSUB[nLast.s][li]);$('npush').classList.add('on');clearTimeout(nT1);nT1=setTimeout(nMin,3500)}return}
  if(a=='dispatch'){var o3=ord(b.dataset.id);if(!o3.drv){toast('Elige un repartidor');return}cloudDo('equipo_avanzar',o3,{p_esperado:EST[o3.s]});o3.s=2;o3.n=1;pushN(o3);toast(o3.drv+': '+(o3.pay=='cash'?'cobrar $'+fmt(o3.t)+' en efectivo':'pedido ya pagado'));admin();return}
- if((a=='adddrv'||a=='rmdrv')&&CLOUD){toast('Cada motorizado entra con su propia cuenta. Pídela a DiCyn Marketing.');return}
+ if(a=='rmdrv'&&CLOUD){var dn=DRV[+b.dataset.n];SB.rpc('quitar_acceso',{p_usuario:DRVID[dn],p_sucursal:SUC.id}).then(function(r){toast(r.error?r.error.message:'Acceso quitado a '+dn);return sbTeam()}).then(function(){admin()});return}
+ if(a=='adddrv'&&CLOUD){toast('Para agregar un motorizado: en su teléfono abre la app del equipo y toca “Soy motorizado”.');return}
  if(a=='adddrv'){var nd=$('nd').value.trim();if(nd&&DRV.indexOf(nd)<0)DRV.push(nd);admin();return}
  if(a=='rmdrv'){DRV.splice(+b.dataset.n,1);if(DRV.indexOf(cd)<0)cd=DRV[0]||'';admin();return}
  if(a=='deliv'){var o4=ord(b.dataset.id);cloudDo('motorizado_entregar',o4);o4.s=3;o4.n=1;pushN(o4);drv();return}
@@ -725,7 +730,7 @@ function drv(){var mine=orders.filter(function(o){return o.drv==cd&&o.s==2}),dn=
  mine.forEach(function(o){h+='<div class="ord"><h4>Entrega</h4><p><b>'+esc(o.name)+'</b></p>'+mapSvg(o.loc)+''+drvPay(o)+'<p>📍 '+esc(o.ref)+'</p>'+(o.loc.gps?'<a class="b2 lk" target="_blank" rel="noopener" href="https://maps.google.com/?q='+o.loc.gps+'">Abrir en Google Maps</a>':'')+'<button class="cta" data-a="deliv" data-id="'+o.id+'">Marcar entregado</button></div>'});
  if(CLOUD&&APPMODE)h+='<div style="padding:12px"><button class="b2" data-a="staffout" style="width:100%;padding:10px">Cerrar sesión</button></div>';
  scr.innerHTML=h}
-var APPV='0.9.1',UPDSKIP='';
+var APPV='0.9.2',UPDSKIP='';
 function vnew(a,b){a=String(a).split('.');b=String(b).split('.');for(var i=0;i<4;i++){var x=+a[i]||0,y=+b[i]||0;if(x!=y)return x>y}return false}
 function showUpd(d,demo){var e=$('upd');e.innerHTML='<b>🐷 Nueva versión '+esc(d.v)+' disponible</b><ul>'+(d.notes||[]).map(function(n){return'<li>'+esc(n)+'</li>'}).join('')+'</ul><div class="ub"><button class="no" data-a="updno">Después</button><button class="go" data-a="updgo"'+(demo?' data-demo="1"':'')+'>Actualizar ahora</button></div>';e.hidden=false;e.dataset.v=d.v}
 function applyUpd(){window.UPDGO=true;var r=window.SWREG;if(!r){location.reload();return}var fin=function(w){w.postMessage('skip')};try{if(r.waiting){fin(r.waiting)}else{r.update().then(function(){if(r.waiting)fin(r.waiting);else if(r.installing){var w=r.installing;w.addEventListener('statechange',function(){if(w.state=='installed')fin(r.waiting||w)})}else location.reload()}).catch(function(){location.reload()})}}catch(e){location.reload()}setTimeout(function(){if(window.UPDGO)location.reload()},12000)}
@@ -760,7 +765,7 @@ function stfInit(){shut();if(CLOUD){cloudStaff();return}if(!window._np){window._
  if(isMain()||(STF.role=='admin'&&STF.st=='ok')){stfScreen('<h2>Administrador</h2><p>Escribe tu PIN</p><input type="password" inputmode="numeric" id="pin" maxlength="8" placeholder="PIN" autocomplete="off"><div class="err" id="er"></div><button class="cta" data-a="spin">Entrar</button>');return}
  if(STF.st=='pending'){stfScreen('<h2>⏳ Esperando aprobación</h2><p>Se avisó al administrador. Cuando apruebe este dispositivo, la app se abrirá sola.</p><p><b>'+esc(DV.label)+' · ID '+esc(DV.id)+'</b></p><button class="cta wa" data-a="scancel">Cancelar solicitud</button>');netPoll();return}
  stfScreen('<h2>Porké No? · Equipo</h2><p>¿Cómo vas a usar esta app?</p><button class="cta" data-a="smain">👑 Soy el dueño · primera vez</button><p class="note">Esta es la que tienes tú. Crea tu PIN y entra directo, sin pedir permiso a nadie.</p><button class="cta wa" data-a="sreq" data-r="driver">🛵 Soy motorizado</button><button class="cta wa" data-a="sreq" data-r="admin">🔑 Soy otro administrador</button><p class="note">Motorizado y otro administrador piden aprobación al dueño. Después no podrán cambiar de rol.</p>')}
-function reqBanner(){if(CLOUD||!isMain())return'';return getReqs().filter(function(r){return r.st=='pending'}).map(function(r){var a=function(st){return'data-a="sdec" data-i="'+esc(r.id)+'" data-t="'+r.t+'" data-s="'+st+'"'};return'<div class="rq"><b>🔔 Solicitud de '+(r.role=='driver'?'MOTORIZADO':'ADMINISTRADOR')+'</b><small>Dispositivo: '+esc(r.label)+' · ID '+esc(r.id)+'</small><div class="ub"><button class="no" '+a('no')+'>Negar</button><button class="go" '+a('ok')+'>Aprobar</button></div></div>'}).join('')}
+function reqBanner(){if(CLOUD)return solBanner();if(!isMain())return'';return getReqs().filter(function(r){return r.st=='pending'}).map(function(r){var a=function(st){return'data-a="sdec" data-i="'+esc(r.id)+'" data-t="'+r.t+'" data-s="'+st+'"'};return'<div class="rq"><b>🔔 Solicitud de '+(r.role=='driver'?'MOTORIZADO':'ADMINISTRADOR')+'</b><small>Dispositivo: '+esc(r.label)+' · ID '+esc(r.id)+'</small><div class="ub"><button class="no" '+a('no')+'>Negar</button><button class="go" '+a('ok')+'>Aprobar</button></div></div>'}).join('')}
 function accSect(){if(CLOUD)return cloudAccSect();var h='<p class="note">Este dispositivo: <b>'+(isMain()?'Principal (aprueba solicitudes)':'Secundario')+'</b></p>';
  if(isMain()){var ok=getReqs().filter(function(r){return r.st=='ok'});h+='<label>Dispositivos autorizados</label>'+(ok.length?ok.map(function(r){return'<div class="dvr"><span>'+(r.role=='driver'?'🛵 Motorizado':'🔑 Admin')+' · '+esc(r.label)+' · ID '+esc(r.id)+'</span><button class="no" data-a="srev" data-i="'+esc(r.id)+'" data-t="'+r.t+'">Quitar</button></div>'}).join(''):'<p class="note">Ninguno todavía.</p>')+'<label>PIN actual</label><input type="password" inputmode="numeric" id="pn_c" maxlength="8"><label>PIN nuevo (4 a 8 números, por ejemplo una fecha 241023)</label><input type="text" inputmode="numeric" id="pn_n" maxlength="8"><div class="err" id="pnr"></div><button class="cta" data-a="spinchg">Cambiar PIN</button>'}
  else h+='<p class="note">Para aprobar solicitudes y cambiar el PIN usa el dispositivo principal.</p>';
@@ -778,16 +783,37 @@ var _sl='';setInterval(function(){try{var j=JSON.stringify({cart:cart,typ:typ,ta
 var SB=null,SBP=null,SBR=null,SBL=0,SUC=null,ME=null,EQ=null,DRVID={},EST=['recibido','preparando','en_camino','entregado'],SECC={ff:'comida_rapida',bk:'desayunos'};
 var PAYDB={yappy:'yappy',transfer:'transferencia',cash:'efectivo'},PAYAPP={yappy:'yappy',transferencia:'transfer',efectivo:'cash'},PSAPP={por_cobrar:'cod',en_revision:'rev',verificado:'ok',rechazado:'bad'};
 function sbLoad(){if(SBP)return SBP;SBP=new Promise(function(ok,ko){var x=document.createElement('script');x.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js';
- x.onload=function(){SB=window.supabase.createClient(SB_URL,SB_KEY,{auth:{storageKey:APPMODE?'pk_sb_equipo':'pk_sb_cliente',persistSession:true,autoRefreshToken:true}});ok(SB)};x.onerror=function(){SBP=null;ko(new Error('sin conexión'))};document.head.appendChild(x)});return SBP}
-function sbSuc(){if(SUC)return Promise.resolve(SUC);return SB.from('sucursales').select('*').eq('slug',SB_SUC).single().then(function(r){if(r.error)throw r.error;SUC=r.data;
- FEE=+SUC.tarifa_entrega;SVC=+SUC.cargo_servicio;if(SUC.yappy)YAP=SUC.yappy;var bk=SUC.banco||{};if(bk.cuenta){BANKN=String(bk.cuenta).replace(/\D/g,'');BANK=[bk.banco||'',(bk.tipo||'Cuenta')+' '+bk.cuenta,'A nombre de: '+(bk.titular||'')]}
- return Promise.all([SB.from('productos').select('codigo,precio,disponible,sabores').eq('sucursal_id',SUC.id),sbHrsGet()])}).then(function(rs){(rs[0].data||[]).forEach(sbProd);reRender();return SUC})}
-function sbHrsGet(){return SB.from('horarios').select('seccion,dia_semana,activo,apertura,cierre').eq('sucursal_id',SUC.id).eq('dia_semana',new Date().getDay()).then(function(r){(r.data||[]).forEach(function(h){var k=h.seccion=='desayunos'?'bk':h.seccion=='comida_rapida'?'ff':null;if(k)HRS[k]={on:h.activo,a:h.apertura.slice(0,5),b:h.cierre.slice(0,5)}})})}
+ x.onload=function(){SB=window.supabase.createClient(SB_URL,SB_KEY,{auth:{storageKey:APPMODE?'pk_sb_equipo':'pk_sb_cliente',persistSession:true,autoRefreshToken:true,flowType:'pkce',detectSessionInUrl:!APPMODE}});ok(SB)};x.onerror=function(){SBP=null;ko(new Error('sin conexión'))};document.head.appendChild(x)});return SBP}
+var MENUT=0;
+function sbMenuApply(m){if(!m||!m.suc)return;var c=m.suc;FEE=+c.tarifa_entrega;SVC=+c.cargo_servicio;if(c.yappy)YAP=c.yappy;var bk=c.banco||{};if(bk.cuenta){BANKN=String(bk.cuenta).replace(/\D/g,'');BANK=[bk.banco||'',(bk.tipo||'Cuenta')+' '+bk.cuenta,'A nombre de: '+(bk.titular||'')]}
+ (m.prod||[]).forEach(sbProd);(m.hrs||[]).forEach(sbHr)}
+function sbHr(h){if(h.dia_semana!=new Date().getDay())return;var k=h.seccion=='desayunos'?'bk':h.seccion=='comida_rapida'?'ff':null;if(k)HRS[k]={on:h.activo,a:h.apertura.slice(0,5),b:h.cierre.slice(0,5)}}
+function sbMenu(){return Promise.all([SB.from('productos').select('codigo,precio,disponible,sabores').eq('sucursal_id',SUC.id),SB.from('horarios').select('seccion,dia_semana,activo,apertura,cierre').eq('sucursal_id',SUC.id)]).then(function(rs){if(rs[0].error||rs[1].error)return;
+ var m={suc:SUC,prod:rs[0].data||[],hrs:rs[1].data||[]};MENUT=Date.now();sbMenuApply(m);try{localStorage.setItem('pk_menu',JSON.stringify(m))}catch(e){}reRender()})}
+function sbSuc(){if(SUC)return Promise.resolve(SUC);return SB.from('sucursales').select('*').eq('slug',SB_SUC).single().then(function(r){if(r.error)throw r.error;SUC=r.data;return sbMenu()}).then(function(){return SUC})}
+function sbHrsGet(){return SB.from('horarios').select('seccion,dia_semana,activo,apertura,cierre').eq('sucursal_id',SUC.id).then(function(r){(r.data||[]).forEach(sbHr)})}
 function sbProd(p){var a=String(p.codigo).split('-'),m=MENU[+a[0]],it=m&&m.i[+a[1]];if(!it)return;if(p.precio!=null)it[1]=+p.precio;
  if(p.disponible){delete OUT[p.codigo]}else{OUT[p.codigo]=1;Object.keys(cart).forEach(function(k){if(cart[k].id==p.codigo)delete cart[k]})}
  var sb=p.sabores||{};Object.keys(sb).forEach(function(f){INV[f]=sb[f]?1:0})}
-function sbUser(){return SB.auth.getSession().then(function(r){var s=r.data.session;if(s&&(!APPMODE||!s.user.is_anonymous))return s.user;if(APPMODE)return null;
- return SB.auth.signInAnonymously().then(function(r2){if(r2.error)throw r2.error;return r2.data.user})}).then(function(u){ME=u;return u})}
+function sbUser(){return SB.auth.getSession().then(function(r){var s=r.data.session;ME=s?s.user:null;if(!APPMODE)gUser();return ME})}
+function gUser(){var u=ME&&!ME.is_anonymous&&ME.email?ME:null,md=u&&u.user_metadata||{};user=u?{email:u.email,name:md.full_name||md.name||u.email.split('@')[0]}:null}
+function gLogin(){var o={provider:'google',options:{redirectTo:location.origin+location.pathname}};try{if(items().length)localStorage.setItem('pk_after','cart')}catch(e){}
+ sbLoad().then(function(){return SB.auth.getSession()}).then(function(r){var s=r.data.session,anon=s&&s.user.is_anonymous,nl=false;try{nl=localStorage.getItem('pk_nolink')=='1'}catch(e){}
+  if(anon&&!nl)return SB.auth.linkIdentity(o).then(function(x){if(!x.error)return x;try{localStorage.setItem('pk_anonmsg','1')}catch(e){}return SB.auth.signInWithOAuth(o)});
+  if(anon){try{localStorage.setItem('pk_anonmsg','1')}catch(e){}}return SB.auth.signInWithOAuth(o)})
+ .then(function(x){if(x&&x.error)toast('No se pudo abrir Google. Intenta de nuevo.')}).catch(function(){toast('Sin conexión. Intenta de nuevo.')})}
+function gOut(m){sbLiveOff();pushOff().then(function(){return SB?SB.auth.signOut():null}).then(function(){},function(){}).then(function(){ME=null;user=null;orders=[];shut();home();if(m)toast(m)})}
+function gAfter(){var f={};try{['pk_after','pk_anonmsg'].forEach(function(k){f[k]=localStorage.getItem(k);localStorage.removeItem(k)})}catch(e){}
+ if(/error_description=.*(already|exists|linked)/i.test(decodeURIComponent(location.href))){try{localStorage.setItem('pk_nolink','1');history.replaceState(history.state,'',location.pathname)}catch(e){}
+  setTimeout(function(){toast('Esa cuenta de Google ya estaba registrada. Toca “Entrar con Google” otra vez.')},3200);return}
+ if(!user)return;if(f.pk_anonmsg)setTimeout(function(){toast('Entraste con Google. Los pedidos de prueba de antes quedaron en la sesión anterior: empieza de nuevo.')},3300);
+ if(f.pk_after=='cart'&&items().length)setTimeout(function(){locGate=false;cartSheet()},3400)}
+function sbPerfil(){if(!user)return Promise.resolve();return Promise.all([SB.from('clientes').select('nombre,celular').eq('id',ME.id).maybeSingle(),ADDR.length?Promise.resolve({data:[]}):SB.from('direcciones').select('nombre,referencia,lat,lng,predeterminada').eq('cliente_id',ME.id)]).then(function(rs){var c=rs[0].data||{};
+ if(!fm.nm)fm.nm=c.nombre||user.name;if(!fm.ph&&c.celular)fm.ph=c.celular;(rs[1].data||[]).forEach(function(d){ADDR.push({id:++aid,name:d.nombre,ref:d.referencia,loc:{x:170,y:120,gps:(+d.lat).toFixed(5)+','+(+d.lng).toFixed(5)}});if(d.predeterminada||!selA)selA=aid});
+ if(ADDR.length){applyA();try{localStorage.setItem('pk_addr',JSON.stringify(ADDR));localStorage.setItem('pk_sel',selA)}catch(e){}updChip();if(!(rs[1].data||[]).length)cloudAddr()}}).catch(function(){})}
+function cloudPerfil(){if(!CLOUD||!SB||!user)return;var d=phD(fm.ph);SB.from('clientes').upsert({id:ME.id,nombre:(fm.nm||'').trim()||null,celular:d.length==8?d.slice(0,4)+'-'+d.slice(4):null},{onConflict:'id'}).then(function(){})}
+var ADT=0;function cloudAddr(){if(!CLOUD||!SB||!user)return;clearTimeout(ADT);ADT=setTimeout(function(){var rows=ADDR.filter(function(a){return a.loc}).map(function(a){var g=gpsOf(a.loc);return{cliente_id:ME.id,nombre:a.name,referencia:a.ref||'',lat:g[0],lng:g[1],predeterminada:a.id==selA}});
+ SB.from('direcciones').delete().eq('cliente_id',ME.id).then(function(){return rows.length?SB.from('direcciones').insert(rows):null}).then(function(){},function(){})},800)}
 function sbReady(){return SBR||(SBR=sbLoad().then(sbSuc).then(sbUser).catch(function(e){SBR=null;throw e}))}
 function reRender(){if(view=='c'){var st=scr.scrollTop;home();scr.scrollTop=st}else if(view=='a')admin();else if(view=='r')drv()}
 function rowOrd(r){return{id:r.id,day:r.dia,num:r.numero,time:new Date(r.creado_en),type:r.tipo=='delivery'?'d':'l',name:r.nombre,phone:r.telefono,ref:r.referencia||'',
@@ -802,30 +828,36 @@ function onRow(r,isNew){var u=upOrd(rowOrd(r));if(!u){reRender();badge();strip()
  if(APPMODE){if(EQ&&EQ.rol=='admin'&&isNew&&!p){nSnd(0);sysN('Nuevo pedido #'+o.num,o.name+' · $'+fmt(o.t));toast('🔔 Nuevo pedido #'+o.num+' · $'+fmt(o.t))}
   if(EQ&&EQ.rol=='motorizado'&&o.s==2&&(!p||p.s<2)){nSnd(2);sysN('Nueva entrega',o.name+' · '+o.ref)}if(o.path&&!o.proof)sbProofs([o]);reRender();return}
  if(p){if(o.s!=p.s){o.n=1;pushN(o)}else if(o.ps!=p.ps){if(o.ps=='ok')pushN(o);else if(o.ps=='bad')nCustom('⚠️',A('y_bad_t'),A('y_bad_b2'))}if(tr)track()}
- badge();strip()}
-function sbOrders(){var d=new Date(),q=SB.from('pedidos').select('*').neq('estado','cancelado').order('creado_en',{ascending:false});d.setDate(d.getDate()-13);
+ badge();strip();sbLiveSync()}
+function sbOrders(){if(!ME)return Promise.resolve();var d=new Date(),q=SB.from('pedidos').select('*').neq('estado','cancelado').order('creado_en',{ascending:false});d.setDate(d.getDate()-13);
  q=!APPMODE?q.eq('cliente_id',ME.id).limit(30):EQ.rol=='admin'?q.eq('sucursal_id',SUC.id).gte('dia',day(d)).limit(1000):q.eq('motorizado_id',ME.id).gte('dia',day(d)).limit(200);
  return q.then(function(r){if(r.error)throw r.error;(r.data||[]).forEach(function(x){upOrd(rowOrd(x))});if(APPMODE)sbProofs(orders)})}
 function sbProofs(list){var ps=list.filter(function(o){return o.path&&!o.proof}).map(function(o){return o.path});if(!ps.length||!APPMODE||!EQ||EQ.rol!='admin')return;
  SB.storage.from('comprobantes').createSignedUrls(ps,3600).then(function(r){(r.data||[]).forEach(function(x){if(!x.signedUrl)return;orders.forEach(function(o){if(o.path==x.path)o.proof=x.signedUrl})});if(view=='a')admin()})}
-function sbLive(){if(SBL)return;SBL=1;var f=!APPMODE?'cliente_id=eq.'+ME.id:EQ.rol=='admin'?'sucursal_id=eq.'+SUC.id:'motorizado_id=eq.'+ME.id;
- SB.channel('pk-'+ME.id).on('postgres_changes',{event:'*',schema:'public',table:'pedidos',filter:f},function(m){if(m.eventType!='DELETE')onRow(m.new,m.eventType=='INSERT')})
- .on('postgres_changes',{event:'UPDATE',schema:'public',table:'productos',filter:'sucursal_id=eq.'+SUC.id},function(m){sbProd(m.new);if(!(view=='a'&&admTab=='inv'))reRender();paint()})
- .on('postgres_changes',{event:'*',schema:'public',table:'horarios',filter:'sucursal_id=eq.'+SUC.id},function(){sbHrsGet().then(function(){if(!(view=='a'&&admTab=='hor'))reRender()})})
- .subscribe()}
-function sbReload(){if(!SB||!ME||(APPMODE&&!EQ))return;sbOrders().then(function(){if(APPMODE)reRender();else{badge();strip();if(tr)track()}}).catch(function(){})}
-document.addEventListener('visibilitychange',function(){if(CLOUD&&!document.hidden)sbReload()});
+var SBCH=null;
+function sbLive(){if(SBL||!ME)return;SBL=1;var S='sucursal_id=eq.'+SUC.id,U='usuario_id=eq.'+ME.id,c=SB.channel('pk-'+ME.id+'-'+Date.now()),pc=function(f){c.on('postgres_changes',{event:'*',schema:'public',table:'pedidos',filter:f},function(m){if(m.eventType!='DELETE')onRow(m.new,m.eventType=='INSERT')})};
+ if(!APPMODE)pc('cliente_id=eq.'+ME.id);
+ else if(EQ.rol=='admin'){pc(S);c.on('postgres_changes',{event:'UPDATE',schema:'public',table:'productos',filter:S},function(m){sbProd(m.new);if(!(view=='a'&&admTab=='inv'))reRender()})
+  .on('postgres_changes',{event:'*',schema:'public',table:'horarios',filter:S},function(){sbHrsGet().then(function(){if(!(view=='a'&&admTab=='hor'))reRender()})})
+  .on('postgres_changes',{event:'*',schema:'public',table:'solicitudes_acceso',filter:S},sbSol)
+  .on('postgres_changes',{event:'*',schema:'public',table:'equipo',filter:S},function(){sbTeam().then(function(){if(view=='a')admin()})})}
+ else{pc('motorizado_id=eq.'+ME.id);c.on('postgres_changes',{event:'UPDATE',schema:'public',table:'equipo',filter:U},function(m){if(m.new&&!m.new.activo)sbKick('El administrador te quitó el acceso. Puedes pedirlo otra vez.')})}
+ SBCH=c.subscribe()}
+function sbLiveOff(){if(SBCH){try{SB.removeChannel(SBCH)}catch(e){}}SBCH=null;SBL=0}
+function sbLiveSync(){if(!CLOUD||APPMODE||!SB||!ME)return;var need=!document.hidden&&orders.some(function(o){return o.day==today()&&o.s<3});if(need)sbLive();else if(SBL)sbLiveOff()}
+function sbReload(){if(!SB||!ME||(APPMODE&&!EQ))return;sbOrders().then(function(){if(APPMODE)reRender();else{badge();strip();if(tr)track();sbLiveSync()}}).catch(function(){})}
+document.addEventListener('visibilitychange',function(){if(!CLOUD)return;if(document.hidden){sbLiveSync();return}sbReload();if(SUC&&Date.now()-MENUT>6e5)sbMenu()});
 function cloudDo(fn,o,x){if(!CLOUD||!SB)return;SB.rpc(fn,Object.assign({p_pedido:o.id},x||{})).then(function(r){if(r.error){toast(r.error.message||'No se pudo guardar');sbReload()}else if(r.data)onRow(r.data,false)})}
 function fnErr(e){var c=e&&e.context;return(c&&c.json?c.json().then(function(j){return j.error}):Promise.resolve(null)).catch(function(){return null}).then(function(m){return m||'No se pudo enviar el pedido. Revisa tu conexión e intenta de nuevo.'})}
 function sbUp(d){var b=d.split(','),bin=atob(b[1]),u=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
  var mt=(b[0].match(/:(.*?);/)||[])[1]||'image/jpeg',path=ME.id+'/'+Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.'+(mt.split('/')[1]||'jpg');
  return SB.storage.from('comprobantes').upload(path,new Blob([u],{type:mt}),{contentType:mt,upsert:false}).then(function(r){if(r.error)throw new Error('No se pudo subir el comprobante. Usa una foto JPG o PNG e intenta de nuevo.');return path})}
-function cloudSend(o,btn){if(btn.dataset.busy)return;btn.dataset.busy=1;var ot=btn.textContent;btn.textContent='Enviando…';
+function cloudSend(o,btn){if(!user){login();return}if(btn.dataset.busy)return;btn.dataset.busy=1;var ot=btn.textContent;btn.textContent='Enviando…';
  var fail=function(m){delete btn.dataset.busy;btn.textContent=ot;var e=$('er');if(e)e.textContent=m;else toast(m)},g=o.loc?gpsOf(o.loc):null;
  sbReady().then(function(){return o.proof&&o.proof!='wa'?sbUp(o.proof):null}).then(function(path){
   return SB.functions.invoke('crear-pedido',{body:{sucursal:SUC.id,tipo:o.type=='d'?'delivery':'recoger',items:o.items.map(function(x){return{codigo:x.id,cantidad:x.q,doble:!!x.d,sabor:x.f||null}}),
    nombre:o.name,telefono:o.phone,correo:o.email||null,referencia:o.ref||null,lat:g?g[0]:null,lng:g?g[1]:null,metodo_pago:PAYDB[o.pay],comprobante_path:path,comprobante_whatsapp:o.proof=='wa',nota:o.note||null}})})
- .then(function(r){if(r.error)return fnErr(r.error).then(fail);delete btn.dataset.busy;var n=upOrd(rowOrd(r.data.pedido)).o;if(o.proof)n.proof=o.proof;phReg(n.phone,n.name);proofData=null;clearInterval(pTm);sentOk(n);sbLive()})
+ .then(function(r){if(r.error)return fnErr(r.error).then(fail);delete btn.dataset.busy;var n=upOrd(rowOrd(r.data.pedido)).o;if(o.proof)n.proof=o.proof;phReg(n.phone,n.name);proofData=null;clearInterval(pTm);sentOk(n);sbLiveSync()})
  .catch(function(e){fail(e&&/comprobante/.test(e.message)?e.message:'No se pudo enviar el pedido. Revisa tu conexión e intenta de nuevo.')})}
 function cloudReproof(o,d,btn){btn.disabled=true;sbReady().then(function(){return d=='wa'?null:sbUp(d)}).then(function(path){return SB.rpc('cliente_reenviar_comprobante',{p_pedido:o.id,p_path:path,p_whatsapp:d=='wa'})})
  .then(function(r){if(r.error)throw r.error;o.proof=d;o.ps='rev';proofData=null;clearInterval(pTm);onRow(r.data,false);shut();strip();toast(A('y_resent'))})
@@ -835,18 +867,36 @@ function cloudOut(id){if(!CLOUD||!SB||!SUC)return;var q=SB.from('productos').upd
 function cloudInv(){if(!CLOUD||!SB||!SUC)return;var s={};FLV.forEach(function(f){s[f]=!!INV[f]});SB.from('productos').update({sabores:s}).eq('sucursal_id',SUC.id).eq('codigo','2-0').then(function(r){if(r.error)toast('No se pudo guardar el inventario')})}
 function cloudStaff(){view='x';stfScreen('<h2>Porké No? · Equipo</h2><p>Conectando…</p>');
  sbLoad().then(sbSuc).then(sbUser).then(function(u){return u?sbRole():sbRolScr()}).catch(function(){stfScreen('<h2>Sin conexión</h2><p>No pudimos conectar con el servidor. Revisa el internet e intenta de nuevo.</p><button class="cta" data-a="sbretry">Reintentar</button>')})}
-function sbRolScr(m){SBROL='';stfScreen('<h2>Porké No? · Equipo</h2><p>¿Cómo vas a usar esta app?</p>'+(m?'<div class="err">'+m+'</div>':'')+'<button class="cta" data-a="sbrol" data-r="admin">🔑 Soy administrador</button><button class="cta wa" data-a="sbrol" data-r="motorizado">🛵 Soy motorizado</button><p class="note">Después entras con el correo y la contraseña que te dio el dueño.</p>')}
-function sbLoginScr(m){if(!SBROL)return sbRolScr(m);stfScreen('<h2>'+(SBROL=='admin'?'🔑 Administrador':'🛵 Motorizado')+'</h2><p>Entra con tu correo y tu contraseña.</p><input type="email" id="sem" placeholder="Correo" autocomplete="username"><input type="password" id="spw" placeholder="Contraseña" autocomplete="current-password"><div class="err" id="er">'+(m||'')+'</div><button class="cta" data-a="sblogin">Entrar</button><button class="lnk" data-a="sbback">Cambiar de rol</button>')}
+function sbRolScr(m){SBROL='';stfScreen('<h2>Porké No? · Equipo</h2><p>¿Cómo vas a usar esta app?</p>'+(m?'<div class="err">'+m+'</div>':'')+'<button class="cta" data-a="sbrol" data-r="admin">🔑 Soy administrador</button><button class="cta wa" data-a="sbrol" data-r="motorizado">🛵 Soy motorizado</button><p class="note">El administrador entra con su correo y contraseña. El motorizado pide acceso desde su teléfono y el administrador lo aprueba.</p>')}
+function sbDrvScr(m){SBROL='motorizado';stfScreen('<h2>🛵 Motorizado</h2><p>Escribe tu nombre para pedir acceso. El administrador lo aprueba desde su tablet.</p><input type="text" id="snm" maxlength="40" placeholder="Tu nombre" autocomplete="name"><div class="err" id="er">'+(m||'')+'</div><button class="cta" data-a="sbpedir">Pedir acceso</button><button class="lnk" data-a="sbback">Cambiar de rol</button>')}
+function sbPedir(b){var nm=($('snm').value||'').trim();if(nm.length<2){$('er').textContent='Escribe tu nombre';return}b.disabled=true;
+ (ME?Promise.resolve(ME):SB.auth.signInAnonymously().then(function(r){if(r.error)throw r.error;ME=r.data.user;return ME})).then(function(){return SB.rpc('solicitar_acceso',{p_sucursal:SB_SUC,p_nombre:nm,p_dispositivo:DV.label})})
+ .then(function(r){if(r.error){if(/ya tiene acceso/.test(r.error.message))return sbRole();throw r.error}sbEspera(r.data)}).catch(function(e){b.disabled=false;$('er').textContent=e&&e.message||'Sin conexión. Intenta de nuevo.'})}
+var ESP=null;
+function sbEspera(sol){stfScreen('<h2>⏳ Esperando aprobación</h2><p>Le avisamos al administrador. Cuando apruebe este teléfono, la app se abrirá sola.</p><p><b>'+esc(sol.nombre)+' · '+esc(sol.dispositivo||DV.label)+'</b></p><button class="cta wa" data-a="sbcancel">Cancelar solicitud</button>');
+ sbEspOff();ESP={ch:SB.channel('esp-'+ME.id).on('postgres_changes',{event:'UPDATE',schema:'public',table:'solicitudes_acceso',filter:'usuario_id=eq.'+ME.id},function(m){sbEspRes(m.new)}).subscribe(),t:setInterval(sbEspPoll,10000)}}
+function sbEspOff(){if(!ESP)return;try{SB.removeChannel(ESP.ch)}catch(e){}clearInterval(ESP.t);ESP=null}
+function sbUltSol(){return SB.from('solicitudes_acceso').select('*').eq('usuario_id',ME.id).eq('sucursal_id',SUC.id).order('creado_en',{ascending:false}).limit(1).maybeSingle().then(function(r){return r.data})}
+function sbEspPoll(){sbUltSol().then(function(s){if(s)sbEspRes(s)})}
+function sbEspRes(s){if(!ESP||!s||s.estado=='pendiente')return;sbEspOff();if(s.estado=='aprobada'){SBROL='';sbRole()}else if(s.estado=='rechazada')sbNoAut();else sbRolScr('La solicitud fue cancelada. Puedes pedir acceso otra vez.')}
+function sbNoAut(){stfScreen('<h2>🚫 No autorizado</h2><p>El administrador no aprobó este teléfono.</p><button class="cta" data-a="sbback">Volver</button>')}
+function sbKick(m){sbLiveOff();try{SB.removeAllChannels()}catch(e){}EQ=null;orders=[];ROLE='client';saveRole();setApp(true);sbRolScr(m)}
+function sbLoginScr(m){SBROL='admin';stfScreen('<h2>🔑 Administrador</h2><p>Entra con tu correo y tu contraseña.</p><input type="email" id="sem" placeholder="Correo" autocomplete="username"><input type="password" id="spw" placeholder="Contraseña" autocomplete="current-password"><div class="err" id="er">'+(m||'')+'</div><button class="cta" data-a="sblogin">Entrar</button><button class="lnk" data-a="sbback">Cambiar de rol</button>')}
 function sbLogin(b){var em=($('sem').value||'').trim(),pw=$('spw').value||'';if(!em||!pw){$('er').textContent='Escribe tu correo y tu contraseña';return}b.disabled=true;
  SB.auth.signInWithPassword({email:em,password:pw}).then(function(r){if(r.error){b.disabled=false;$('er').textContent='Correo o contraseña incorrectos';return}ME=r.data.user;return sbRole()}).catch(function(){b.disabled=false;$('er').textContent='Sin conexión. Intenta de nuevo.'})}
 function sbRole(){return SB.from('equipo').select('rol,nombre').eq('usuario_id',ME.id).eq('sucursal_id',SUC.id).eq('activo',true).maybeSingle().then(function(r){EQ=r.data;
+ if(!EQ&&ME.is_anonymous)return sbUltSol().then(function(s){var st=s&&s.estado;if(st=='pendiente')return sbEspera(s);if(st=='rechazada')return sbNoAut();if(st=='revocada')return sbRolScr('El administrador te quitó el acceso. Puedes pedirlo otra vez.');return SBROL=='motorizado'?sbDrvScr():sbRolScr()});
  var no=!EQ?'Esta cuenta no tiene acceso a este local. Pide acceso al dueño.':SBROL&&EQ.rol!=SBROL?(SBROL=='motorizado'?'Esta cuenta no es de motorizado. Si eres administrador, toca “Cambiar de rol”.':'Esta cuenta no es de administrador. Si eres motorizado, toca “Cambiar de rol”.'):'';
- if(no){EQ=null;return SB.auth.signOut().then(function(){ME=null;sbLoginScr(no)})}
- ROLE=EQ.rol=='admin'?'owner':'driver';LK=EQ.rol!='admin';saveRole();orders=[];return sbTeam().then(sbOrders).then(function(){sbLive();setApp(true);setView(EQ.rol=='admin'?'a':'r');pushRelink()})})}
+ if(no){EQ=null;return SB.auth.signOut().then(function(){ME=null;SBROL=='admin'?sbLoginScr(no):sbRolScr(no)})}
+ ROLE=EQ.rol=='admin'?'owner':'driver';LK=EQ.rol!='admin';saveRole();orders=[];return sbTeam().then(function(){return EQ.rol=='admin'?sbSolLoad():null}).then(sbOrders).then(function(){sbLive();setApp(true);setView(EQ.rol=='admin'?'a':'r');pushRelink()})})}
 function sbTeam(){if(EQ.rol!='admin'){DRV=[EQ.nombre];cd=EQ.nombre;DRVID={};DRVID[EQ.nombre]=ME.id;return Promise.resolve()}
  return SB.from('equipo').select('usuario_id,nombre').eq('sucursal_id',SUC.id).eq('rol','motorizado').eq('activo',true).order('nombre').then(function(r){DRV=[];DRVID={};(r.data||[]).forEach(function(x){DRV.push(x.nombre);DRVID[x.nombre]=x.usuario_id});cd=DRV[0]||''})}
-function cloudSignOut(){try{SB.removeAllChannels()}catch(e){}SBL=0;pushOff().then(function(){return SB.auth.signOut()}).then(function(){},function(){}).then(function(){ME=null;EQ=null;SBROL='';orders=[];ROLE='client';saveRole();cloudStaff()})}
-function cloudAccSect(){return sect('Cuenta','#7fd1ff','<p class="note">Sesión: <b>'+esc(ME&&ME.email||'')+'</b> · '+(EQ&&EQ.rol=='admin'?'Administrador':'Motorizado')+'</p><p class="note">Para agregar o quitar motorizados y administradores, escríbele a DiCyn Marketing.</p><button class="b2" data-a="staffout" style="width:100%;padding:10px;margin-top:8px">Cerrar sesión</button>')}
+function cloudSignOut(){sbLiveOff();sbEspOff();try{SB.removeAllChannels()}catch(e){}pushOff().then(function(){return SB.auth.signOut()}).then(function(){},function(){}).then(function(){ME=null;EQ=null;SBROL='';orders=[];ROLE='client';saveRole();cloudStaff()})}
+function cloudAccSect(){return sect('Cuenta','#7fd1ff','<p class="note">Sesión: <b>'+esc(ME&&ME.email||EQ&&EQ.nombre||'')+'</b> · '+(EQ&&EQ.rol=='admin'?'Administrador':'Motorizado')+'</p><p class="note">Los motorizados piden acceso desde su teléfono (app del equipo › Soy motorizado). Los apruebas arriba en Pedidos y les quitas el acceso en Repartidores.</p><button class="b2" data-a="staffout" style="width:100%;padding:10px;margin-top:8px">Cerrar sesión</button>')}
+var SOL=[];
+function sbSolLoad(){return SB.from('solicitudes_acceso').select('id,nombre,dispositivo,estado,creado_en').eq('sucursal_id',SUC.id).eq('estado','pendiente').order('creado_en').then(function(r){SOL=r.data||[]})}
+function sbSol(m){var r=m.new;if(!r||!r.id)return;SOL=SOL.filter(function(x){return x.id!=r.id});if(r.estado=='pendiente'){SOL.push(r);if(m.eventType=='INSERT'){nSnd(0);toast('🔔 '+r.nombre+' pide acceso como motorizado')}}if(view=='a')admin()}
+function solBanner(){return SOL.map(function(r){var a=function(x){return'data-a="solr" data-i="'+esc(r.id)+'" data-x="'+x+'"'};return'<div class="rq"><b>🔔 Solicitud de MOTORIZADO</b><small>'+esc(r.nombre)+' · '+esc(r.dispositivo||'Teléfono')+'</small><div class="ub"><button class="no" '+a('rechazar')+'>Rechazar</button><button class="no" '+a('cancelar')+'>Cancelar</button><button class="go" '+a('aprobar')+'>Aprobar</button></div></div>'}).join('')}
 var SBROL='',PUSHON=0;try{PUSHON=localStorage.getItem('pk_push')=='1'&&'Notification' in window&&Notification.permission=='granted'?1:0}catch(e){}
 function pushOK(){return CLOUD&&'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window}
 function b64u(s){var b=atob((s+'='.repeat((4-s.length%4)%4)).replace(/-/g,'+').replace(/_/g,'/')),u=new Uint8Array(b.length);for(var i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u}
@@ -854,15 +904,17 @@ function pushSub(){return Promise.all([navigator.serviceWorker.ready,fetch(SB_UR
  return reg.pushManager.getSubscription().then(function(s){return s||reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(k)})})})}
 function pushSave(sub){var j=sub.toJSON();return SB.from('suscripciones_push').upsert({usuario_id:ME.id,endpoint:j.endpoint,p256dh:j.keys.p256dh,auth:j.keys.auth,app:APPMODE?'equipo':'cliente',dispositivo:DV.label,ultimo_uso:new Date().toISOString()},{onConflict:'usuario_id,endpoint'}).then(function(r){if(r.error)throw r.error})}
 function pushOn(quiet){if(!pushOK())return Promise.resolve(false);
- return Promise.resolve(Notification.permission=='granted'?'granted':Notification.requestPermission()).then(function(p){if(p!='granted')throw 'no';return(APPMODE?Promise.resolve():sbReady()).then(function(){if(!ME)throw 'no';return pushSub()})}).then(pushSave)
+ return Promise.resolve(Notification.permission=='granted'?'granted':Notification.requestPermission()).then(function(p){if(p!='granted')throw 'no';return(APPMODE?Promise.resolve():sbReady()).then(function(){if(!ME||(!APPMODE&&!user))throw 'no';return pushSub()})}).then(pushSave)
  .then(function(){PUSHON=1;try{localStorage.setItem('pk_push','1')}catch(e){}if(!quiet)toast(A('n_sys_ok'));if(APPMODE&&(view=='a'||view=='r'))reRender();return true})
  .catch(function(e){if(!quiet)toast(Notification.permission=='denied'?A('n_sys_no'):'No se pudieron activar los avisos. Intenta de nuevo.');return false})}
 function pushOff(){if(!pushOK()||!SB||!ME)return Promise.resolve();return navigator.serviceWorker.ready.then(function(r){return r.pushManager.getSubscription()}).then(function(sub){if(sub)return SB.from('suscripciones_push').delete().eq('usuario_id',ME.id).eq('endpoint',sub.endpoint)}).catch(function(){})}
 function pushRelink(){if(pushOK()&&Notification.permission=='granted')pushOn(true)}
 function pushBan(){return CLOUD&&APPMODE&&pushOK()&&!PUSHON?'<button class="b2" data-a="pushon" style="width:calc(100% - 24px);margin:8px 12px;padding:12px">🔔 Activar notificaciones de pedidos</button>':''}
 if(CLOUD&&'serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',function(e){var d=e.data||{};if(d.pk!='open')return;if(APPMODE){if(EQ&&EQ.rol=='admin'){admTab='ped';selDay=today();setView('a')}else if(EQ)setView('r')}else if(cur())track()});
-if(CLOUD){ROLE='client';orders=orders.filter(function(o){return !o.demo});if(!APPMODE)sbReady().then(sbOrders).then(function(){strip();badge();sbLive();pushRelink();
- if(location.hash=='#pedido'){try{history.replaceState(history.state,'',location.pathname+location.search)}catch(e){}if(cur())track()}}).catch(function(){})}
+if(CLOUD){ROLE='client';orders=orders.filter(function(o){return !o.demo});try{sbMenuApply(JSON.parse(localStorage.getItem('pk_menu')||'null'))}catch(e){}
+ AT.p_phn=['Tu celular es solo para contactarte por tu pedido.','Your phone is only used to contact you about your order.','Seu celular é só para contato sobre o pedido.'];
+ if(!APPMODE)sbReady().then(function(){home();return sbPerfil()}).then(sbOrders).then(function(){strip();badge();sbLiveSync();if(user)pushRelink();gAfter();
+  if(location.hash=='#pedido'){try{history.replaceState(history.state,'',location.pathname+location.search)}catch(e){}if(cur())track()}}).catch(function(){})}
 try{$('splash').querySelector('small').textContent='Versión '+APPV+(CLOUD?'':' · prototipo')}catch(e){}
 home();setTimeout(function(){$('splash').classList.add('out');entry()},matchMedia('(prefers-reduced-motion:reduce)').matches?300:2600);
 $('splash').onclick=function(){this.classList.add('out');entry()};

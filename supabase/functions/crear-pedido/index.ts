@@ -85,11 +85,13 @@ Deno.serve(async (req) => {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 
-  // Quién pide: la sesión del teléfono (anónima en la fase 1, con teléfono verificado en la fase 2).
+  // Quién pide: la sesión de Google del cliente.
   const jwt = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
   const { data: auth } = await db.auth.getUser(jwt);
   const user = auth?.user;
   if (!user) return fallo(401, "Tu sesión expiró. Cierra y vuelve a abrir la app.");
+  // Solo clientes con cuenta de Google; las sesiones anónimas (motorizados por dispositivo) no piden.
+  if (user.is_anonymous || !user.email) return fallo(401, "Inicia sesión con Google para hacer tu pedido.");
 
   let b: Record<string, unknown>;
   try {
@@ -107,8 +109,7 @@ Deno.serve(async (req) => {
   if (!nombre) return fallo(400, "Falta tu nombre y teléfono.");
   if (tel.length !== 8) return fallo(400, "El teléfono debe tener 8 dígitos (ej. 6000-0000).");
   const telefono = `${tel.slice(0, 4)}-${tel.slice(4)}`;
-  const correo = texto(b.correo, 120) || null;
-  if (correo && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(correo)) return fallo(400, "Escribe un correo válido para tu factura.");
+  const correo = user.email; // el comprobante va al correo de la cuenta de Google
   const nota = texto(b.nota, 300) || null;
   const referencia = texto(b.referencia, 200) || null;
 
@@ -207,7 +208,7 @@ Deno.serve(async (req) => {
   const envio = tipo === "delivery" ? centavos(suc.tarifa_entrega) : 0;
   const servicio = centavos(suc.cargo_servicio);
 
-  await db.from("clientes").upsert({ id: user.id, nombre }, { onConflict: "id" });
+  await db.from("clientes").upsert({ id: user.id, nombre, celular: telefono, correo }, { onConflict: "id" });
 
   const { data: pedido, error } = await db.from("pedidos").insert({
     sucursal_id: suc.id,

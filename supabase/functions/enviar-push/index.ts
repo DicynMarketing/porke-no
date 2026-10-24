@@ -32,7 +32,13 @@ function claveSecreta() {
 }
 
 type Aviso = { usuarios: string[] | null; app: "cliente" | "equipo" | null; title: string; body: string; tag: string; hash?: string };
-type Fila = { id: number; tipo: string; pedido_id: string | null; datos: Record<string, string>; creado_en: string };
+type Fila = { id: number; tipo: string; pedido_id: string | null; solicitud_id?: string | null; datos: Record<string, string>; creado_en: string };
+
+// deno-lint-ignore no-explicit-any
+async function admins(db: any, sucursal: string): Promise<string[]> {
+  const { data } = await db.from("equipo").select("usuario_id").eq("sucursal_id", sucursal).eq("rol", "admin").eq("activo", true);
+  return (data ?? []).map((e: { usuario_id: string }) => e.usuario_id);
+}
 
 const dinero = (n: number | string) => `$${Number(n).toFixed(2)}`;
 
@@ -46,6 +52,14 @@ async function armar(db: any, f: Fila): Promise<Aviso | null> {
       body: f.datos.notas || `Abre la app y toca "Actualizar ahora" (versión ${f.datos.v}).`,
     };
   }
+  if (f.tipo === "solicitud") {
+    const { data: sol } = await db.from("solicitudes_acceso").select("*").eq("id", f.solicitud_id).maybeSingle();
+    if (!sol || sol.estado !== "pendiente") return null;
+    return {
+      usuarios: await admins(db, sol.sucursal_id), app: "equipo", tag: `solicitud-${sol.id}`,
+      title: "🛵 Solicitud de acceso", body: `${sol.nombre} · ${sol.dispositivo ?? "teléfono"} quiere entrar como motorizado`,
+    };
+  }
   const { data: p } = await db.from("pedidos").select("*").eq("id", f.pedido_id).maybeSingle();
   if (!p) return null;
   const { data: s } = await db.from("sucursales").select("restaurante_id").eq("id", p.sucursal_id).maybeSingle();
@@ -55,9 +69,9 @@ async function armar(db: any, f: Fila): Promise<Aviso | null> {
   const delivery = p.tipo === "delivery";
 
   if (f.tipo === "nuevo") {
-    const { data: eq } = await db.from("equipo").select("usuario_id").eq("sucursal_id", p.sucursal_id).eq("activo", true);
+    // Solo administradores: el motorizado se entera cuando le asignan la entrega.
     return {
-      usuarios: (eq ?? []).map((e: { usuario_id: string }) => e.usuario_id), app: "equipo", tag,
+      usuarios: await admins(db, p.sucursal_id), app: "equipo", tag,
       title: `🔔 Pedido nuevo #${p.numero}`,
       body: `${p.nombre} · ${delivery ? "Delivery" : "Recoger en el local"} · ${dinero(p.total)}`,
     };

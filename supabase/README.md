@@ -85,3 +85,65 @@ Cuando la versión ya esté publicada, en **SQL Editor** › **Run**:
 select public.avisar_nueva_version('0.9.1', 'Pantalla de rol y notificaciones en la bandeja del teléfono');
 ```
 Llega como notificación a todos los teléfonos que activaron los avisos.
+
+---
+
+# Paso 3 · Clientes con Google, motorizados por teléfono aprobado y comprobante por correo (versión 0.9.2)
+
+Haz los pasos en este orden. Cada uno se hace una sola vez.
+
+## G. Correr el SQL nuevo
+**SQL Editor** › **New query** › pega todo `supabase/03-clientes-google-motorizados.sql` › **Run** → *Success*.
+(Abre https://github.com/DicynMarketing/porke-no/blob/fase-1-pedidos-en-vivo/supabase/03-clientes-google-motorizados.sql y usa el botón de copiar).
+
+## H. Volver a subir las dos funciones que cambiaron
+En **Edge Functions**, entra a cada una › **Code** (o **Edit**) › borra todo › pega la versión nueva › **Deploy**:
+- `crear-pedido` ← `supabase/functions/crear-pedido/index.ts` (ahora exige cuenta de Google). Verify JWT: apagado.
+- `enviar-push` ← `supabase/functions/enviar-push/index.ts` (el aviso de pedido nuevo va solo al administrador). Verify JWT: apagado.
+
+## I. Crear el acceso con Google (en Google Cloud)
+1. Entra a https://console.cloud.google.com con tu cuenta de Google › arriba, selector de proyectos › **New project** › nombre `porke-no` › **Create**.
+2. Menú ☰ › **APIs & Services** › **OAuth consent screen** (en la versión nueva se llama **Google Auth Platform**) › **Get started**:
+   - App name: `Porké No?` · User support email: tu correo › **Next**
+   - Audience: **External** › **Next** · Contact information: tu correo › **Next** › acepta › **Create**.
+3. **Branding** › **Authorized domains** › **Add domain** (uno por uno): `porke-no.pages.dev` y `dgfdkcphklmeqlvyzmpu.supabase.co` › **Save**.
+4. **Audience** › **Publish app** › **Confirm**. (Solo se piden nombre y correo, por eso Google no exige revisión).
+5. **Clients** › **Create client** › Application type: **Web application** › Name: `Porké No? web`:
+   - **Authorized JavaScript origins** › **Add URI**:
+     `https://porke-no.pages.dev` y `https://fase-1-pedidos-en-vivo.porke-no.pages.dev`
+   - **Authorized redirect URIs** › **Add URI**: `https://dgfdkcphklmeqlvyzmpu.supabase.co/auth/v1/callback`
+     (Google siempre devuelve al cliente a Supabase; Supabase lo regresa a la app. Por eso las páginas de la app van en "JavaScript origins" y aquí solo va la dirección de Supabase).
+   - **Create**. Se muestran **Client ID** y **Client secret**. Déjalos abiertos para el paso J. No los pegues en el chat.
+
+## J. Activar Google en Supabase
+1. **Authentication** › **Sign In / Providers** › **Google** › actívalo.
+2. Pega **Client ID** en "Client IDs" y **Client secret** en "Client Secret (for OAuth)" › **Save**. El secreto queda solo en Supabase.
+3. En la misma sección de proveedores deja **Allow anonymous sign-ins** encendido (lo usan los teléfonos de los motorizados) y activa **Allow manual linking** (pasa los pedidos de prueba anteriores a la cuenta de Google) › **Save**.
+4. No actives "Email" para clientes: los clientes solo entran con Google. (El administrador sigue entrando con el correo y la contraseña que creaste en Users).
+
+## K. Direcciones permitidas de regreso
+**Authentication** › **URL Configuration**:
+- **Site URL**: `https://porke-no.pages.dev` › **Save**
+- **Redirect URLs** › **Add URL** (una por una) › **Save**:
+  - `https://porke-no.pages.dev/**`
+  - `https://*.porke-no.pages.dev/**`  (cubre el link de prueba de cada rama)
+
+## L. Correo del comprobante (Resend)
+1. Entra a https://resend.com › **Sign up** (con tu Google). Plan **Free**.
+2. **API Keys** › **Create API Key** › nombre `porke-no` › permiso **Sending access** › **Add**. Copia la clave (empieza con `re_`).
+3. En Supabase › **Edge Functions** › **Secrets** › crea:
+   - `EMAIL_PROVIDER` → `resend`
+   - `RESEND_API_KEY` → la clave `re_…`
+   - `EMAIL_FROM` → `Porké No? <onboarding@resend.dev>` (para probar)
+4. **Importante:** con `onboarding@resend.dev`, Resend solo entrega correos a la dirección con la que creaste tu cuenta de Resend. Para que les llegue a todos los clientes hace falta un dominio propio verificado en Resend (**Domains** › **Add Domain**) y cambiar `EMAIL_FROM` a `Porké No? <recibos@tu-dominio>`. El dominio tiene costo anual: antes de comprarlo te confirmo el precio.
+5. **Edge Functions** › **Deploy a new function** › **Via Editor** › nombre `enviar-comprobante` › pega `supabase/functions/enviar-comprobante/index.ts` › **Deploy**. Verify JWT: **apagado** (la llama la base de datos; solo envía comprobantes de pedidos que ya están en su cola interna).
+
+## M. Motorizados
+Ya no se crean en Authentication. En el teléfono del motorizado: abre la app del equipo › **Soy motorizado** › escribe su nombre › **Pedir acceso**. En la tablet aparece la solicitud con su nombre y su teléfono: **Aprobar**, **Rechazar** o **Cancelar**. Para quitarle el acceso: pestaña **Repartidores** › **×** junto a su nombre (toca dos veces).
+Si antes creaste la cuenta de motorizado de tu esposa con correo y contraseña, ya no la necesita: puede pedir acceso desde su teléfono como se explica arriba.
+
+## Capacidad y plan
+- El menú y los horarios se guardan en el teléfono y se actualizan al abrir la app (y cada 10 minutos al volver a ella). No usan tiempo real.
+- El cliente solo abre una conexión en tiempo real mientras tiene un pedido activo, y la cierra al salir de la app o al terminar el pedido. La tablet del administrador y el motorizado mantienen la suya.
+- Plan gratis de Supabase (datos de octubre 2026, verifícalos en https://supabase.com/pricing): 200 conexiones de tiempo real a la vez, 50,000 usuarios activos al mes, 500,000 llamadas a funciones al mes, base de datos de 500 MB, archivos 1 GB, 5 GB de tráfico al mes. **El proyecto gratis se pausa tras 1 semana sin uso.**
+- Con 200 a 300 clientes y picos de decenas a la vez, el plan gratis alcanza en capacidad, pero antes de abrir al público conviene el **plan Pro (desde 25 USD al mes)**: no se pausa, tiene copias de seguridad diarias y más margen (500 conexiones de tiempo real, 8 GB de base de datos).
