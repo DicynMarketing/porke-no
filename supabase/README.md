@@ -1,0 +1,35 @@
+# Fase 1 · Conectar Porké No? a Supabase
+
+Mientras `SB_URL` y `SB_KEY` estén vacías en `index.html`, la app funciona igual que el prototipo.
+
+## 1. Crear el proyecto (lo haces tú)
+1. Entra a https://supabase.com y toca **Start your project**. Entra con tu cuenta de GitHub.
+2. Toca **New project**. Nombre: `porke-no`. Pon una contraseña de base de datos y guárdala solo para ti; no la compartas con nadie, ni conmigo. Región: **East US (North Virginia)**, que es la más cercana a Panamá. Plan: **Free**.
+3. Espera unos 2 minutos a que termine.
+
+## 2. Crear las tablas
+1. En el menú izquierdo toca **SQL Editor** › **New query**.
+2. Copia todo el archivo `supabase/schema.sql`, pégalo y toca **Run**. Debe decir *Success*.
+
+## 3. Permitir pedidos sin cuenta (fase 1)
+**Authentication** › **Sign In / Providers** › activa **Allow anonymous sign-ins** › **Save**.
+(En la fase 2 esto se cambia por el código de verificación al teléfono).
+
+## 4. Subir la función que valida pedidos
+1. **Edge Functions** › **Deploy a new function** › **Via Editor**.
+2. Nombre: `crear-pedido`. Borra el ejemplo, pega todo `supabase/functions/crear-pedido/index.ts` y toca **Deploy function**.
+
+## 5. Crear las cuentas del equipo
+1. **Authentication** › **Users** › **Add user** › **Create new user**. Pon el correo y la contraseña de la dueña y marca **Auto Confirm User**. Haz lo mismo con cada motorizado.
+2. **SQL Editor** › **New query**. Escribe una línea por persona y toca **Run**:
+   ```sql
+   select public.agregar_equipo('correo-de-la-duena@gmail.com', 'aguadulce', 'admin', 'Dueña');
+   select public.agregar_equipo('correo-del-motorizado@gmail.com', 'aguadulce', 'motorizado', 'Carlos');
+   ```
+
+## 6. Pasarme las dos claves públicas
+**Project Settings** › **API**. Copia **Project URL** y la clave **anon public**.
+Esas dos son públicas y pueden ir en la app. La clave **service_role** NO me la pases nunca.
+
+## Datos de ejemplo que hay que confirmar
+En la tabla `sucursales` (menú **Table Editor**): la ubicación exacta del local (lat/lng), el radio de entrega (hoy 5 km) y la cuenta bancaria real. El horario está en `horarios`.
