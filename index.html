@@ -731,7 +731,7 @@ function drv(){var mine=orders.filter(function(o){return o.drv==cd&&o.s==2}),dn=
  mine.forEach(function(o){h+='<div class="ord"><h4>Entrega</h4><p><b>'+esc(o.name)+'</b></p>'+mapSvg(o.loc)+''+drvPay(o)+'<p>📍 '+esc(o.ref)+'</p>'+(o.loc.gps?'<a class="b2 lk" target="_blank" rel="noopener" href="https://maps.google.com/?q='+o.loc.gps+'">Abrir en Google Maps</a>':'')+'<button class="cta" data-a="deliv" data-id="'+o.id+'">Marcar entregado</button></div>'});
  if(CLOUD&&APPMODE)h+='<div style="padding:12px"><button class="b2" data-a="staffout" style="width:100%;padding:10px">Cerrar sesión</button></div>';
  scr.innerHTML=h}
-var APPV='0.9.3',UPDSKIP='';
+var APPV='0.9.4',UPDSKIP='';
 function vnew(a,b){a=String(a).split('.');b=String(b).split('.');for(var i=0;i<4;i++){var x=+a[i]||0,y=+b[i]||0;if(x!=y)return x>y}return false}
 function showUpd(d,demo){var e=$('upd');e.innerHTML='<b>🐷 Nueva versión '+esc(d.v)+' disponible</b><ul>'+(d.notes||[]).map(function(n){return'<li>'+esc(n)+'</li>'}).join('')+'</ul><div class="ub"><button class="no" data-a="updno">Después</button><button class="go" data-a="updgo"'+(demo?' data-demo="1"':'')+'>Actualizar ahora</button></div>';e.hidden=false;e.dataset.v=d.v}
 function applyUpd(){window.UPDGO=true;var r=window.SWREG;if(!r){location.reload();return}var fin=function(w){w.postMessage('skip')};try{if(r.waiting){fin(r.waiting)}else{r.update().then(function(){if(r.waiting)fin(r.waiting);else if(r.installing){var w=r.installing;w.addEventListener('statechange',function(){if(w.state=='installed')fin(r.waiting||w)})}else location.reload()}).catch(function(){location.reload()})}}catch(e){location.reload()}setTimeout(function(){if(window.UPDGO)location.reload()},12000)}

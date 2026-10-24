@@ -31,7 +31,10 @@ function claveSecreta() {
   return Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 }
 
-type Aviso = { usuarios: string[] | null; app: "cliente" | "equipo" | null; title: string; body: string; tag: string; hash?: string };
+// Imagen grande por etapa (cerdito estático; Android no anima imágenes en notificaciones).
+const IMG = (etapa: string) => `/icons/notif/${etapa}.png`;
+
+type Aviso = { usuarios: string[] | null; app: "cliente" | "equipo" | null; title: string; body: string; tag: string; hash?: string; image?: string };
 type Fila = { id: number; tipo: string; pedido_id: string | null; solicitud_id?: string | null; datos: Record<string, string>; creado_en: string };
 
 // deno-lint-ignore no-explicit-any
@@ -65,13 +68,12 @@ async function armar(db: any, f: Fila): Promise<Aviso | null> {
   const { data: s } = await db.from("sucursales").select("restaurante_id").eq("id", p.sucursal_id).maybeSingle();
   const { data: r } = s ? await db.from("restaurantes").select("nombre").eq("id", s.restaurante_id).maybeSingle() : { data: null };
   const local = r?.nombre ?? "el local";
-  const tag = `pedido-${p.id}`;
   const delivery = p.tipo === "delivery";
 
   if (f.tipo === "nuevo") {
     // Solo administradores: el motorizado se entera cuando le asignan la entrega.
     return {
-      usuarios: await admins(db, p.sucursal_id), app: "equipo", tag,
+      usuarios: await admins(db, p.sucursal_id), app: "equipo", tag: `pedido-${p.id}-nuevo`, image: IMG("recibido"),
       title: `🔔 Pedido nuevo #${p.numero}`,
       body: `${p.nombre} · ${delivery ? "Delivery" : "Recoger en el local"} · ${dinero(p.total)}`,
     };
@@ -79,17 +81,18 @@ async function armar(db: any, f: Fila): Promise<Aviso | null> {
   if (f.tipo === "entrega") {
     if (!p.motorizado_id) return null;
     return {
-      usuarios: [p.motorizado_id], app: "equipo", tag,
+      usuarios: [p.motorizado_id], app: "equipo", tag: `pedido-${p.id}-entrega`, image: IMG("en_camino"),
       title: `🛵 Nueva entrega #${p.numero}`,
       body: `${p.nombre} · ${p.referencia ?? ""}${p.metodo_pago === "efectivo" ? ` · Cobrar ${dinero(p.total)}` : " · Ya pagado"}`,
     };
   }
   if (!p.cliente_id) return null;
-  const cliente = { usuarios: [p.cliente_id], app: "cliente" as const, tag, hash: "pedido" };
+  const cliente = { usuarios: [p.cliente_id], app: "cliente" as const, hash: "pedido" };
   if (f.tipo === "pago") {
+    const tagPago = `pedido-${p.id}-pago-${f.datos.estado_pago}`;
     return f.datos.estado_pago === "verificado"
-      ? { ...cliente, title: "Pago verificado ✅", body: "Ya lo tenemos. En breve empezamos tu pedido 🐷" }
-      : { ...cliente, title: "Verifica tu pago", body: "No vimos el pago en la cuenta del local. Toca para ver opciones." };
+      ? { ...cliente, tag: tagPago, image: IMG("recibido"), title: "Pago verificado ✅", body: "Ya lo tenemos. En breve empezamos tu pedido 🐷" }
+      : { ...cliente, tag: tagPago, image: IMG("recibido"), title: "Verifica tu pago", body: "No vimos el pago en la cuenta del local. Toca para ver opciones." };
   }
   const textos: Record<string, [string, string]> = {
     preparando: ["Preparando tu pedido", "Nuestro cocinero ya está en eso 🔥"],
@@ -100,7 +103,9 @@ async function armar(db: any, f: Fila): Promise<Aviso | null> {
     cancelado: ["Tu pedido fue cancelado", `Escríbele a ${local} por WhatsApp si tienes dudas.`],
   };
   const t = textos[f.datos.estado];
-  return t ? { ...cliente, title: t[0], body: t[1] } : null;
+  // Cada etapa con su propia etiqueta: así Android vuelve a mostrar la ventana emergente.
+  const etapa = f.datos.estado === "en_camino" && !delivery ? "listo" : f.datos.estado;
+  return t ? { ...cliente, tag: `pedido-${p.id}-${etapa}`, image: IMG(etapa), title: t[0], body: t[1] } : null;
 }
 
 Deno.serve(async (req) => {
@@ -146,12 +151,12 @@ Deno.serve(async (req) => {
         vistos.add(s.endpoint);
         const app = aviso.app ?? s.app;
         const url = (app === "equipo" ? "./?app=equipo" : "./") + (aviso.hash ? `#${aviso.hash}` : "");
-        const payload = JSON.stringify({ title: aviso.title, body: aviso.body, tag: aviso.tag, app, url });
+        const payload = JSON.stringify({ title: aviso.title, body: aviso.body, tag: aviso.tag, image: aviso.image, app, url });
         try {
           const r = webpush.generateRequestDetails(
             { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
             payload,
-            { vapidDetails, TTL: 3600, urgency: "high" },
+            { vapidDetails, TTL: 1800, urgency: "high" }, // llega de inmediato; si el teléfono está apagado más de 30 min, ya no sirve
           );
           const headers = { ...r.headers } as Record<string, string>;
           delete headers["Content-Length"]; // fetch la calcula sola
