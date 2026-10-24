@@ -5,10 +5,11 @@
 // métodos de pago de la base de datos.
 //
 // Despliegue:  supabase functions deploy crear-pedido
-// (usa las variables SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY que Supabase
-// pone solas en cada función).
+// (usa las variables que Supabase pone solas en cada función: SUPABASE_URL y
+// la clave secreta, SUPABASE_SECRET_KEYS en proyectos nuevos o
+// SUPABASE_SERVICE_ROLE_KEY en los antiguos).
 
-import { createClient } from "npm:@supabase/supabase-js@2.45.4";
+import { createClient } from "npm:@supabase/supabase-js@2.117.3";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -31,6 +32,14 @@ function json(status: number, body: unknown) {
   });
 }
 const fallo = (status: number, error: string) => json(status, { error });
+
+function claveSecreta() {
+  try {
+    const k = JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") ?? "{}");
+    if (k.default) return k.default as string;
+  } catch { /* proyecto con claves antiguas */ }
+  return Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+}
 
 const centavos = (n: number | string) => Math.round(Number(n) * 100);
 const texto = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slice(0, max) : "");
@@ -72,7 +81,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return fallo(405, "Método no permitido.");
 
-  const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, {
+  const db = createClient(Deno.env.get("SUPABASE_URL")!, claveSecreta(), {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 

@@ -18,6 +18,7 @@ Mientras `SB_URL` y `SB_KEY` estén vacías en `index.html`, la app funciona igu
 ## 4. Subir la función que valida pedidos
 1. **Edge Functions** › **Deploy a new function** › **Via Editor**.
 2. Nombre: `crear-pedido`. Borra el ejemplo, pega todo `supabase/functions/crear-pedido/index.ts` y toca **Deploy function**.
+3. Entra a la función, pestaña **Details** (o **Settings**). Si ves la opción **Verify JWT with legacy secret** encendida, apágala y guarda. La función ya revisa la sesión del cliente por su cuenta, y con las claves nuevas esa opción bloquea los pedidos.
 
 ## 5. Crear las cuentas del equipo
 1. **Authentication** › **Users** › **Add user** › **Create new user**. Pon el correo y la contraseña de la dueña y marca **Auto Confirm User**. Haz lo mismo con cada motorizado.
@@ -27,9 +28,9 @@ Mientras `SB_URL` y `SB_KEY` estén vacías en `index.html`, la app funciona igu
    select public.agregar_equipo('correo-del-motorizado@gmail.com', 'aguadulce', 'motorizado', 'Carlos');
    ```
 
-## 6. Pasarme las dos claves públicas
-**Project Settings** › **API**. Copia **Project URL** y la clave **anon public**.
-Esas dos son públicas y pueden ir en la app. La clave **service_role** NO me la pases nunca.
+## 6. Las dos claves públicas (ya están puestas en la app)
+**Project Settings** › **API Keys**: la **Project URL** y la clave **publishable** (`sb_publishable_…`).
+Esas dos son públicas y pueden ir en la app. La clave **secret** (`sb_secret_…`) o **service_role** NO se comparte nunca.
 
 ## Datos de ejemplo que hay que confirmar
 En la tabla `sucursales` (menú **Table Editor**): la ubicación exacta del local (lat/lng), el radio de entrega (hoy 5 km) y la cuenta bancaria real. El horario está en `horarios`.

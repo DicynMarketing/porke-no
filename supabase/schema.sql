@@ -362,6 +362,24 @@ alter table public.pedido_eventos   enable row level security;
 alter table public.contador_pedidos enable row level security;
 alter table public.dispositivos     enable row level security;
 
+-- Permisos explícitos. En los proyectos nuevos de Supabase (desde mayo de 2026)
+-- las tablas ya no quedan abiertas a la app automáticamente: cada tabla recibe
+-- aquí solo lo que necesita, y las reglas RLS de abajo deciden qué filas ve cada quien.
+grant usage on schema public to anon, authenticated, service_role;
+grant select on public.restaurantes, public.sucursales, public.horarios, public.productos to anon, authenticated;
+grant update on public.restaurantes, public.sucursales to authenticated;
+grant insert on public.sucursales to authenticated;
+grant insert, update, delete on public.horarios, public.productos to authenticated;
+grant select, delete on public.clientes to authenticated;   -- insert/update por columna, más abajo
+grant select, insert, update, delete on public.direcciones, public.equipo, public.dispositivos to authenticated;
+grant select on public.pedidos, public.pedido_eventos to authenticated;
+grant all on all tables in schema public to service_role;     -- la Edge Function
+grant usage, select on all sequences in schema public to authenticated, service_role;
+grant execute on function public.es_equipo(uuid, public.rol_equipo),
+                          public.es_admin(uuid),
+                          public.distancia_km(double precision, double precision, double precision, double precision)
+  to anon, authenticated, service_role;
+
 -- Restaurantes: cualquiera ve los activos (nombre, logo); el dueño edita.
 create policy "restaurantes: ver activos" on public.restaurantes
   for select to anon, authenticated using (activo or dueno_id = auth.uid());
