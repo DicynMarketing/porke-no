@@ -1,5 +1,6 @@
-var C='porkeno-v37';
-self.addEventListener('install',function(e){e.waitUntil(caches.open(C).then(function(c){return c.addAll(['./','index.html','manifest.json','icon-192.png','icon-512.png'])}).then(function(){return self.skipWaiting()}))});
+var C='porkeno-v41';
+self.addEventListener('install',function(e){e.waitUntil(caches.open(C).then(function(c){return c.addAll(['./','index.html','manifest.json','icon-192.png','icon-512.png'].map(function(u){return new Request(u,{cache:'reload'})}))}))});
+self.addEventListener('message',function(e){if(e.data=='skip')self.skipWaiting()});
 self.addEventListener('activate',function(e){e.waitUntil(caches.keys().then(function(k){return Promise.all(k.filter(function(x){return x!=C}).map(function(x){return caches.delete(x)}))}).then(function(){return self.clients.claim()}))});
-self.addEventListener('fetch',function(e){if(e.request.method!='GET'||new URL(e.request.url).origin!=location.origin)return;e.respondWith(fetch(e.request.url,{cache:'no-cache'}).then(function(r){var cp=r.clone();caches.open(C).then(function(c){c.put(e.request,cp)});return r}).catch(function(){return caches.match(e.request).then(function(m){return m||caches.match('index.html')})}))});
+self.addEventListener('fetch',function(e){var u=new URL(e.request.url);if(e.request.method!='GET'||u.origin!=location.origin||/version\.json$/.test(u.pathname))return;e.respondWith(caches.match(e.request).then(function(m){return m||fetch(e.request).then(function(r){if(r.ok){var cp=r.clone();caches.open(C).then(function(c){c.put(e.request,cp)})}return r})}).catch(function(){return caches.match('index.html')}))});
 self.addEventListener('notificationclick',function(e){e.notification.close();e.waitUntil(self.clients.matchAll({type:'window'}).then(function(c){if(c.length)return c[0].focus();return self.clients.openWindow('./')}))});
