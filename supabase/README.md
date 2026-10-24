@@ -1,6 +1,8 @@
 # Fase 1 · Conectar Porké No? a Supabase
 
-Mientras `SB_URL` y `SB_KEY` estén vacías en `index.html`, la app funciona igual que el prototipo.
+En esta rama `index.html` ya apunta al proyecto de Supabase de Porké No?. Si `SB_URL` y `SB_KEY` quedan vacías, la app funciona igual que el prototipo.
+
+Vista previa de esta rama (Cloudflare Pages): `https://fase-1-pedidos-en-vivo.porke-no.pages.dev` (cliente) y la misma dirección con `?app=equipo` al final (Admin y motorizado).
 
 ## 1. Crear el proyecto (lo haces tú)
 1. Entra a https://supabase.com y toca **Start your project**. Entra con tu cuenta de GitHub.
