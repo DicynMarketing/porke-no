@@ -4,7 +4,7 @@ Mientras `SB_URL` y `SB_KEY` estén vacías en `index.html`, la app funciona igu
 
 ## 1. Crear el proyecto (lo haces tú)
 1. Entra a https://supabase.com y toca **Start your project**. Entra con tu cuenta de GitHub.
-2. Toca **New project**. Nombre: `porke-no`. Pon una contraseña de base de datos y guárdala solo para ti; no la compartas con nadie, ni conmigo. Región: **East US (North Virginia)**, que es la más cercana a Panamá. Plan: **Free**.
+2. Toca **New project**. Nombre: `porke-no`. Pon una contraseña de base de datos y guárdala solo para ti; no la compartas con nadie, ni conmigo. Región: la más cercana a Panamá es **East US (North Virginia)**; Porké No? quedó en **West US (Oregon)**, que también funciona bien (la meta de menos de 2 segundos se cumple igual). Plan: **Free**.
 3. Espera unos 2 minutos a que termine.
 
 ## 2. Crear las tablas
@@ -27,6 +27,14 @@ Mientras `SB_URL` y `SB_KEY` estén vacías en `index.html`, la app funciona igu
    select public.agregar_equipo('correo-de-la-duena@gmail.com', 'aguadulce', 'admin', 'Dueña');
    select public.agregar_equipo('correo-del-motorizado@gmail.com', 'aguadulce', 'motorizado', 'Carlos');
    ```
+
+## Revisar que el SQL quedó bien
+En **SQL Editor** › **New query**, pega esto y toca **Run**. Las tres columnas deben decir `true`:
+```sql
+select has_table_privilege('anon', 'public.productos', 'select')            as menu_visible,
+       has_table_privilege('authenticated', 'public.pedidos', 'select')     as pedidos_con_reglas,
+       has_function_privilege('anon', 'public.es_admin(uuid)', 'execute')   as reglas_ok;
+```
 
 ## 6. Las dos claves públicas (ya están puestas en la app)
 **Project Settings** › **API Keys**: la **Project URL** y la clave **publishable** (`sb_publishable_…`).
