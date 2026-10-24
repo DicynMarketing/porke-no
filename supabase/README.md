@@ -44,3 +44,44 @@ Esas dos son públicas y pueden ir en la app. La clave **secret** (`sb_secret_�
 
 ## Datos de ejemplo que hay que confirmar
 En la tabla `sucursales` (menú **Table Editor**): la ubicación exacta del local (lat/lng), el radio de entrega (hoy 5 km) y la cuenta bancaria real. El horario está en `horarios`.
+
+---
+
+# Paso 2 · Pantalla de rol y notificaciones push (versión 0.9.1)
+
+Haz estos pasos en orden. Cada uno se hace una sola vez.
+
+## A. Correr el SQL de notificaciones
+1. **SQL Editor** › **New query**.
+2. Abre https://github.com/DicynMarketing/porke-no/blob/fase-1-pedidos-en-vivo/supabase/02-notificaciones.sql, toca el botón de copiar (dos cuadritos), pégalo y toca **Run**. Debe decir *Success*.
+
+## B. Crear las claves de notificaciones (VAPID)
+1. En la computadora o el teléfono abre https://fase-1-pedidos-en-vivo.porke-no.pages.dev/herramientas/claves-push.html
+2. Toca **Crear claves**. Salen dos claves. No cierres la página hasta terminar el paso C.
+
+## C. Guardar las claves en Supabase (Secrets)
+1. **Edge Functions** › **Secrets** (o **Project Settings** › **Edge Functions** › **Secrets**).
+2. Crea estos tres, uno por uno (**Add new secret** › nombre › valor › **Save**):
+   - `VAPID_PUBLIC_KEY` → la clave 1 (pública)
+   - `VAPID_PRIVATE_KEY` → la clave 2 (privada)
+   - `VAPID_SUBJECT` → `mailto:dicynmarketing@gmail.com`
+3. No me pases ninguna de las dos claves: la app pide la pública sola al servidor.
+
+## D. Subir la función que envía los avisos
+1. **Edge Functions** › **Deploy a new function** › **Via Editor**.
+2. Nombre exacto: `enviar-push`. Borra el ejemplo, pega todo `supabase/functions/enviar-push/index.ts` y toca **Deploy function**.
+3. En la función, **Verify JWT with legacy secret**: **apagado**. La llama la base de datos, que no tiene sesión. Es seguro: la función solo envía lo que la base de datos dejó en su cola interna, y nadie desde la app puede escribir en esa cola.
+
+## E. Cuenta de motorizado de tu esposa
+1. **Authentication** › **Users** › **Add user** › **Create new user**: su correo y una contraseña; marca **Auto Confirm User** › **Create user**.
+2. **SQL Editor** › **New query** (cambia el correo y el nombre) › **Run**:
+   ```sql
+   select public.agregar_equipo('correo-de-tu-esposa@gmail.com', 'aguadulce', 'motorizado', 'Nombre de tu esposa');
+   ```
+
+## F. Avisar a todos que hay versión nueva (opcional, cada vez que se publique una)
+Cuando la versión ya esté publicada, en **SQL Editor** › **Run**:
+```sql
+select public.avisar_nueva_version('0.9.1', 'Pantalla de rol y notificaciones en la bandeja del teléfono');
+```
+Llega como notificación a todos los teléfonos que activaron los avisos.
