@@ -91,8 +91,8 @@ async function armar(db: any, f: Fila): Promise<Aviso | null> {
   if (f.tipo === "pago") {
     const tagPago = `pedido-${p.id}-pago-${f.datos.estado_pago}`;
     return f.datos.estado_pago === "verificado"
-      ? { ...cliente, tag: tagPago, image: IMG("recibido"), title: "Pago verificado ✅", body: "Ya lo tenemos. En breve empezamos tu pedido 🐷" }
-      : { ...cliente, tag: tagPago, image: IMG("recibido"), title: "Verifica tu pago", body: "No vimos el pago en la cuenta del local. Toca para ver opciones." };
+      ? { ...cliente, tag: tagPago, image: IMG("recibido"), title: "Pago verificado ✅", body: `Pedido #${p.numero} · Ya lo tenemos. En breve empezamos tu pedido 🐷` }
+      : { ...cliente, tag: tagPago, image: IMG("recibido"), title: "Verifica tu pago", body: `Pedido #${p.numero} · No vimos el pago en la cuenta del local. Toca para ver opciones.` };
   }
   const textos: Record<string, [string, string]> = {
     preparando: ["Preparando tu pedido", "Nuestro cocinero ya está en eso 🔥"],
@@ -105,7 +105,7 @@ async function armar(db: any, f: Fila): Promise<Aviso | null> {
   const t = textos[f.datos.estado];
   // Cada etapa con su propia etiqueta: así Android vuelve a mostrar la ventana emergente.
   const etapa = f.datos.estado === "en_camino" && !delivery ? "listo" : f.datos.estado;
-  return t ? { ...cliente, tag: `pedido-${p.id}-${etapa}`, image: IMG(etapa), title: t[0], body: t[1] } : null;
+  return t ? { ...cliente, tag: `pedido-${p.id}-${etapa}`, image: IMG(etapa), title: t[0], body: `Pedido #${p.numero} · ${t[1]}` } : null;
 }
 
 Deno.serve(async (req) => {
