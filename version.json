@@ -1,1 +1,1 @@
-{"v": "0.9.2", "notes": ["Clientes: entrar con Google para hacer pedidos (el menú se ve sin cuenta)", "Motorizados: piden acceso desde su teléfono y el administrador aprueba", "El motorizado solo recibe avisos de los pedidos que le asignan", "Comprobante del pedido por correo"]}
+{"v": "0.9.3", "notes": ["Notificaciones en la bandeja del teléfono con el logo de Porké No? a color", "Ícono de la app a color, sin fondo blanco", "El seguimiento del pedido sigue dentro de la app"]}
