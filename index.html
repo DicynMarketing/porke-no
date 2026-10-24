@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<style>html,body{touch-action:pan-x pan-y;-webkit-text-size-adjust:100%;text-size-adjust:100%}input,select,textarea{font-size:16px}</style>
 <title>Porké No? · App v0.8 (prototipo)</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
 <style>
@@ -731,7 +732,7 @@ function drv(){var mine=orders.filter(function(o){return o.drv==cd&&o.s==2}),dn=
  mine.forEach(function(o){h+='<div class="ord"><h4>Entrega</h4><p><b>'+esc(o.name)+'</b></p>'+mapSvg(o.loc)+''+drvPay(o)+'<p>📍 '+esc(o.ref)+'</p>'+(o.loc.gps?'<a class="b2 lk" target="_blank" rel="noopener" href="https://maps.google.com/?q='+o.loc.gps+'">Abrir en Google Maps</a>':'')+'<button class="cta" data-a="deliv" data-id="'+o.id+'">Marcar entregado</button></div>'});
  if(CLOUD&&APPMODE)h+='<div style="padding:12px"><button class="b2" data-a="staffout" style="width:100%;padding:10px">Cerrar sesión</button></div>';
  scr.innerHTML=h}
-var APPV='0.9.6',UPDSKIP='';
+var APPV='0.9.7',UPDSKIP='';
 function vnew(a,b){a=String(a).split('.');b=String(b).split('.');for(var i=0;i<4;i++){var x=+a[i]||0,y=+b[i]||0;if(x!=y)return x>y}return false}
 function showUpd(d,demo){var e=$('upd');e.innerHTML='<b>🐷 Nueva versión '+esc(d.v)+' disponible</b><ul>'+(d.notes||[]).map(function(n){return'<li>'+esc(n)+'</li>'}).join('')+'</ul><div class="ub"><button class="no" data-a="updno">Después</button><button class="go" data-a="updgo"'+(demo?' data-demo="1"':'')+'>Actualizar ahora</button></div>';e.hidden=false;e.dataset.v=d.v}
 function applyUpd(){window.UPDGO=true;var r=window.SWREG;if(!r){location.reload();return}var fin=function(w){w.postMessage('skip')};try{if(r.waiting){fin(r.waiting)}else{r.update().then(function(){if(r.waiting)fin(r.waiting);else if(r.installing){var w=r.installing;w.addEventListener('statechange',function(){if(w.state=='installed')fin(r.waiting||w)})}else location.reload()}).catch(function(){location.reload()})}}catch(e){location.reload()}setTimeout(function(){if(window.UPDGO)location.reload()},12000)}
@@ -835,7 +836,12 @@ function sbOrders(){if(!ME)return Promise.resolve();var d=new Date(),q=SB.from('
  return q.then(function(r){if(r.error)throw r.error;(r.data||[]).forEach(function(x){upOrd(rowOrd(x))});if(APPMODE)sbProofs(orders)})}
 function sbProofs(list){var ps=list.filter(function(o){return o.path&&!o.proof}).map(function(o){return o.path});if(!ps.length||!APPMODE||!EQ||EQ.rol!='admin')return;
  SB.storage.from('comprobantes').createSignedUrls(ps,3600).then(function(r){(r.data||[]).forEach(function(x){if(!x.signedUrl)return;orders.forEach(function(o){if(o.path==x.path)o.proof=x.signedUrl})});if(view=='a')admin()})}
-var SBCH=null;
+var SBCH=null,SBMC=null;
+function sbMenuLive(){if(SBMC||!CLOUD||APPMODE||!SB||!SUC||document.hidden)return;var S='sucursal_id=eq.'+SUC.id;
+ SBMC=SB.channel('menu-'+Date.now()).on('postgres_changes',{event:'UPDATE',schema:'public',table:'productos',filter:S},function(m){if(m.new)sbProd(m.new);menuCambio()})
+ .on('postgres_changes',{event:'*',schema:'public',table:'horarios',filter:S},function(m){if(m.new)sbHr(m.new);menuCambio()}).subscribe()}
+function sbMenuOff(){if(SBMC){try{SB.removeChannel(SBMC)}catch(e){}}SBMC=null}
+var MCT=0;function menuCambio(){clearTimeout(MCT);MCT=setTimeout(function(){paint();if(view!='c')return;if(S.classList.contains('open')&&S.querySelector('#nm'))cartSheet();else if(S.classList.contains('open')&&S.querySelector('.flg'))flSheet(flFrom);reRender()},120)}
 function sbLive(){if(SBL||!ME)return;SBL=1;var S='sucursal_id=eq.'+SUC.id,U='usuario_id=eq.'+ME.id,c=SB.channel('pk-'+ME.id+'-'+Date.now()),pc=function(f){c.on('postgres_changes',{event:'*',schema:'public',table:'pedidos',filter:f},function(m){if(m.eventType!='DELETE')onRow(m.new,m.eventType=='INSERT')})};
  if(!APPMODE)pc('cliente_id=eq.'+ME.id);
  else if(EQ.rol=='admin'){pc(S);c.on('postgres_changes',{event:'UPDATE',schema:'public',table:'productos',filter:S},function(m){sbProd(m.new);if(!(view=='a'&&admTab=='inv'))reRender()})
@@ -847,7 +853,7 @@ function sbLive(){if(SBL||!ME)return;SBL=1;var S='sucursal_id=eq.'+SUC.id,U='usu
 function sbLiveOff(){if(SBCH){try{SB.removeChannel(SBCH)}catch(e){}}SBCH=null;SBL=0}
 function sbLiveSync(){if(!CLOUD||APPMODE||!SB||!ME)return;var need=!document.hidden&&orders.some(function(o){return o.day==today()&&o.s<3});if(need)sbLive();else if(SBL)sbLiveOff()}
 function sbReload(){if(!SB||!ME||(APPMODE&&!EQ))return;sbOrders().then(function(){if(APPMODE)reRender();else{badge();strip();if(tr)track();sbLiveSync()}}).catch(function(){})}
-document.addEventListener('visibilitychange',function(){if(!CLOUD)return;if(document.hidden){sbLiveSync();return}sbReload();if(SUC&&Date.now()-MENUT>6e5)sbMenu()});
+document.addEventListener('visibilitychange',function(){if(!CLOUD)return;if(document.hidden){sbLiveSync();sbMenuOff();return}sbReload();if(SUC&&!APPMODE){sbMenu();sbMenuLive()}});
 function cloudDo(fn,o,x){if(!CLOUD||!SB)return;SB.rpc(fn,Object.assign({p_pedido:o.id},x||{})).then(function(r){if(r.error){toast(r.error.message||'No se pudo guardar');sbReload()}else if(r.data)onRow(r.data,false)})}
 function fnErr(e){var c=e&&e.context;return(c&&c.json?c.json().then(function(j){return j.error}):Promise.resolve(null)).catch(function(){return null}).then(function(m){return m||'No se pudo enviar el pedido. Revisa tu conexión e intenta de nuevo.'})}
 function sbUp(d){var b=d.split(','),bin=atob(b[1]),u=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
@@ -914,7 +920,7 @@ function pushBan(){return CLOUD&&APPMODE&&pushOK()&&!PUSHON?'<button class="b2" 
 if(CLOUD&&'serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',function(e){var d=e.data||{};if(d.pk!='open')return;if(APPMODE){if(EQ&&EQ.rol=='admin'){admTab='ped';selDay=today();setView('a')}else if(EQ)setView('r')}else if(cur())track()});
 if(CLOUD){ROLE='client';orders=orders.filter(function(o){return !o.demo});try{sbMenuApply(JSON.parse(localStorage.getItem('pk_menu')||'null'))}catch(e){}
  AT.p_phn=['Tu celular es solo para contactarte por tu pedido.','Your phone is only used to contact you about your order.','Seu celular é só para contato sobre o pedido.'];
- if(!APPMODE)sbReady().then(function(){home();return sbPerfil()}).then(sbOrders).then(function(){strip();badge();sbLiveSync();if(user)pushRelink();gAfter();
+ if(!APPMODE)sbReady().then(function(){home();sbMenuLive();return sbPerfil()}).then(sbOrders).then(function(){strip();badge();sbLiveSync();if(user)pushRelink();gAfter();
   if(location.hash=='#pedido'){try{history.replaceState(history.state,'',location.pathname+location.search)}catch(e){}if(cur())track()}}).catch(function(){})}
 try{$('splash').querySelector('small').textContent='Versión '+APPV+(CLOUD?'':' · prototipo')}catch(e){}
 home();setTimeout(function(){$('splash').classList.add('out');entry()},matchMedia('(prefers-reduced-motion:reduce)').matches?300:2600);
