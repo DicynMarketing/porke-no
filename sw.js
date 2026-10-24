@@ -1,4 +1,4 @@
-var C='porkeno-v41';
+var C='porkeno-v42';
 self.addEventListener('install',function(e){e.waitUntil(caches.open(C).then(function(c){return c.addAll(['./','index.html','manifest.json','icon-192.png','icon-512.png'].map(function(u){return new Request(u,{cache:'reload'})}))}))});
 self.addEventListener('message',function(e){if(e.data=='skip')self.skipWaiting()});
 self.addEventListener('activate',function(e){e.waitUntil(caches.keys().then(function(k){return Promise.all(k.filter(function(x){return x!=C}).map(function(x){return caches.delete(x)}))}).then(function(){return self.clients.claim()}))});
