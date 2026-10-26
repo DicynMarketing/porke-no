@@ -8,7 +8,7 @@
 -- Todo lo calcula la base de datos; el teléfono solo lo muestra.
 -- Para cambiar las reglas: Table Editor › sucursales › columnas
 --   sellos_meta   (cuántas compras; hoy 6)
---   sellos_minimo (compra mínima en productos para contar; hoy $3.00)
+--   sellos_minimo (compra mínima en productos para contar; hoy $5.00)
 -- =====================================================================
 
 begin;
@@ -18,7 +18,7 @@ update public.sucursales set tarifa_entrega = 2.00 where slug = 'aguadulce';
 
 alter table public.sucursales add column if not exists sellos_meta smallint not null default 6
   check (sellos_meta between 2 and 20);
-alter table public.sucursales add column if not exists sellos_minimo numeric(8,2) not null default 3.00
+alter table public.sucursales add column if not exists sellos_minimo numeric(8,2) not null default 5.00
   check (sellos_minimo >= 0);
 
 create table if not exists public.cupones (

@@ -909,7 +909,7 @@ function sbFid(){if(!CLOUD||!SB||!SUC||!ME||!user)return Promise.resolve();
 function fidOpen(re){var m=fidMeta(),n=user?Math.min(SELLOS,m):0,c='';for(var i=0;i<m;i++)c+=i<n?'<i class="on"><img src="'+LOGO+'" alt=""></i>':i==m-1?'<i class="gf">🍔</i>':'<i>'+(i+1)+'</i>';
  var h='<h3>'+FT('t')+'</h3><p class="note ctr">'+FT('r',{m:m})+'</p><div class="fid" id="fidc">'+c+'</div>'+(user?'<p class="note ctr"><b>'+FT('p',{n:n,m:m,f:m-n})+'</b></p>':'');
  h+=CUPS.map(function(){return'<div class="fidp"><i>🍔</i><div><b>'+FT('cup')+'</b><small>'+FT('cupn')+'</small></div></div>'}).join('');
- h+=user?'<p class="note ctr">'+FT('rule',{x:fmt(SUC&&SUC.sellos_minimo!=null?+SUC.sellos_minimo:3)})+'</p>':'<p class="note ctr">'+FT('log')+'</p><button class="cta wa" data-a="login">'+t('google')+'</button>';
+ h+=user?'<p class="note ctr">'+FT('rule',{x:fmt(SUC&&SUC.sellos_minimo!=null?+SUC.sellos_minimo:5)})+'</p>':'<p class="note ctr">'+FT('log')+'</p><button class="cta wa" data-a="login">'+t('google')+'</button>';
  h+='<button class="cta" data-a="close">'+t('close')+'</button>';open(h);if(!re)sbFid()}
 // Línea del carrito a la que se aplica el cupón: la hamburguesa sin promoción más cara (el servidor hace lo mismo).
 function cupLn(its){if(!CLOUD||!CUP||!CUPON)return null;var best=null;its.forEach(function(x){if(isC(x.id))return;var a=String(x.id).split('-');if(a[0]!='0')return;var p=find(x.id);if(!p||ofertaHoy(p)||(p[5]&&p[5].length))return;if(!best||p[1]>best.amt)best={id:x.id,amt:p[1],p:p}});return best}
