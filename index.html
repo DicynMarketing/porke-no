@@ -10,6 +10,19 @@
 <meta name="apple-mobile-web-app-title" content="Porké No?" id="pkatt">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="theme-color" content="#0e0e0e">
+<style>
+#pkupd{position:fixed;inset:0;z-index:2147483647;background:#F0EEEF;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;opacity:0;transition:opacity .15s ease;padding:env(safe-area-inset-top,0) 16px env(safe-area-inset-bottom,0);-webkit-user-select:none;user-select:none}
+html.pk-upd #pkupd{display:flex}html.pk-upd,html.pk-upd body{overflow:hidden!important}
+#pkupd small{font:600 14px Barlow,system-ui,sans-serif;color:#016B45;letter-spacing:.3px;min-height:18px}
+#pkupd .pkb{width:70vw;max-width:420px;height:12px;border-radius:99px;background:#fff;border:2px solid #F7A8D4;overflow:hidden;box-sizing:content-box}
+#pkupd .pkb i{display:block;height:100%;width:0;background:#016B45;border-radius:99px;transition:width .35s ease-out}
+#pkupd video,#pkupd img{width:min(70vw,320px);height:min(70vw,320px);object-fit:contain;display:block;mix-blend-mode:darken}#pkupd [hidden]{display:none!important}
+#pkupd button{border:0;border-radius:12px;padding:12px 22px;font:700 15px Barlow,system-ui,sans-serif;background:#016B45;color:#fff}
+#pkupd .pkx{background:none;color:#016B45;text-decoration:underline;padding:4px}
+html.pk-boot #pkupd{opacity:1}html.pk-boot #pkupd .pkb i{width:100%;transition:none}
+@media (prefers-reduced-motion:reduce){#pkupd,#pkupd .pkb i{transition:none}}
+</style>
+<script>try{if(sessionStorage.getItem('pk_upd')=='1')document.documentElement.classList.add('pk-upd','pk-boot')}catch(e){}</script>
 <style>html,body{touch-action:pan-x pan-y;-webkit-text-size-adjust:100%;text-size-adjust:100%}input,select,textarea{font-size:16px}</style>
 <title>Porké No? · App v0.8 (prototipo)</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
@@ -214,6 +227,7 @@ body.app .top{display:none}
 .pc-add{background:repeating-linear-gradient(135deg,#2a1a24,#2a1a24 10px,#241520 10px,#241520 20px);border:2px dashed #f7a8d4}.pc-card{background:linear-gradient(135deg,#ff5fa8,#b3236a)}.pc-yappy{background:linear-gradient(135deg,#2d8cff,#1747b8)}.pc-tr{background:linear-gradient(135deg,#1fa39a,#0d5a56)}.pc-cash{background:linear-gradient(135deg,#3fe0a0,#168a5c)}
 .dots{display:flex;justify-content:center;gap:6px;margin:2px 0 6px}.dots span{width:7px;height:7px;border-radius:50%;background:#444;transition:.2s}.dots span.on{width:20px;border-radius:5px;background:#7dffc8}.ln.ro{padding:7px 0}</style></head>
 <body>
+<div id="pkupd" role="status" aria-live="polite"><small id="pkupdt">Actualizando…</small><div class="pkb"><i id="pkupdb"></i></div><video id="pkupdv" autoplay loop muted playsinline preload="auto" poster="assets/carga/cerdito-poster.png" aria-hidden="true"><source src="assets/carga/cerdito-carga.webm" type="video/webm"><source src="assets/carga/cerdito-carga.mp4" type="video/mp4"></video><button id="pkupdr" data-a="updretry" hidden>Reintentar</button><button id="pkupdx" class="pkx" data-a="updclose" hidden>Seguir sin actualizar</button></div>
 <svg style="position:absolute;width:0;height:0" aria-hidden="true"><defs>
 <radialGradient id="gbg" cx=".5" cy=".4" r=".8"><stop offset="0" stop-color="#4a2c1c"/><stop offset="1" stop-color="#150b07"/></radialGradient>
 <linearGradient id="gbun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc864"/><stop offset=".6" stop-color="#e08f2c"/><stop offset="1" stop-color="#b86a18"/></linearGradient>
@@ -423,7 +437,7 @@ AT.c_svc=["Servicio de la app","App service fee","Taxa do app"];AT.c_svc2=["Serv
 AT.y_cam=["Tomar foto","Take photo","Tirar foto"];AT.y_wa=["Enviar comprobante por WhatsApp","Send receipt by WhatsApp","Enviar comprovante pelo WhatsApp"];AT.y_wadone=["WhatsApp abierto · ahora toca “Enviar comprobante y pedir”","WhatsApp opened · now tap “Send receipt and order”","WhatsApp aberto · agora toque em “Enviar comprovante e pedir”"];
 AT.y_copy=["Copiar","Copy","Copiar"];AT.y_copied=["Copiado","Copied","Copiado"];AT.l_conf=["Confirma tu ubicación","Confirm your location","Confirme sua localização"];AT.l_confb=["Confirmar ubicación","Confirm location","Confirmar localização"];AT.l_need=["Elige o agrega una ubicación para continuar.","Choose or add a location to continue.","Escolha ou adicione uma localização para continuar."];
 var locGate=false;window.addEventListener('click',function(e){if(!locGate)return;var t0=e.target;if(t0.id=='shade'||(t0.closest&&t0.closest('[data-a=close]'))){e.stopImmediatePropagation();e.preventDefault()}},true);
-(function(){try{var h=document.head,l=document.createElement('link');var AM=/[?&]app=(admin|driver|staff|equipo)/.test(location.search)?'admin':'';if(AM){document.title='Porké No? Equipo';document.getElementById('pkman').href='manifest-admin.json';document.getElementById('pkati').href='icons/equipo-apple-180.png';document.getElementById('pkatt').content='Porké No? Equipo'}if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(function(r){window.SWREG=r}).catch(function(){});navigator.serviceWorker.addEventListener('controllerchange',function(){if(window.UPDGO)location.reload()})}}catch(e){}})();
+(function(){try{var h=document.head,l=document.createElement('link');var AM=/[?&]app=(admin|driver|staff|equipo)/.test(location.search)?'admin':'';if(AM){document.title='Porké No? Equipo';document.getElementById('pkman').href='manifest-admin.json';document.getElementById('pkati').href='icons/equipo-apple-180.png';document.getElementById('pkatt').content='Porké No? Equipo'}if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(function(r){window.SWREG=r}).catch(function(){});navigator.serviceWorker.addEventListener('controllerchange',function(){if(window.UPDGO&&window.updDone&&!UPD.test)updDone()})}}catch(e){}})();
 var IOSD=/iPhone|iPad|iPod/.test(navigator.userAgent);(function(){var n=document.getElementById('npush');if(n&&!IOSD)n.classList.add('andr')})();
 function nHtml(ic,ti,bo,first){if(IOSD)return'<div class="ni">'+ic+'</div><div><small>PORKÉ NO?'+(first?' · '+['ahora','now','agora'][li]:'')+'</small><b>'+ti+'</b><span>'+bo+'</span></div>';return'<div class="ai"><img src="'+LOGO+'" alt=""></div><div class="ni">'+ic+'</div><div class="nt"><b>'+ti+'</b><span>'+bo+'</span></div><s>⌄</s>'}
 function askNP(){if(CLOUD){if(!PUSHON&&!iosNoInst())pushOn(true);return}try{if('Notification' in window&&Notification.permission=='default'&&NT.on!==false)Notification.requestPermission()}catch(e){}}
@@ -570,7 +584,9 @@ document.addEventListener('click',function(e){
  if(a=='track'){track();return}
  if(a=='dv'){shut();setView(b.dataset.v);return}
  if(a=='updno'){UPDSKIP=$('upd').dataset.v;$('upd').hidden=true;return}
- if(a=='updgo'){if(b.dataset.demo){$('upd').hidden=true;toast('Ejemplo: aquí se recarga la app');return}b.textContent='Actualizando…';b.disabled=true;applyUpd();return}
+ if(a=='updgo'){$('upd').hidden=true;applyUpd(!!b.dataset.demo);return}
+ if(a=='updretry'){applyUpd(UPD.test);return}
+ if(a=='updclose'){var o=$('pkupd');document.documentElement.classList.remove('pk-upd');o.style.opacity='';UPD.p=0;updBar(0);$('pkupdb').style.width='0';return}
  if(a=='updtest'){shut();showUpd({v:'0.7',notes:['Nuevo menú de postres','Pago más rápido con Yappy','Mejoras y correcciones']},true);return}
  if(a=='sreq'){var rr=b.dataset.r,t0=Date.now(),L0=getReqs().filter(function(r){return r.id!=DV.id});L0.push({id:DV.id,label:DV.label,role:rr,t:t0,st:'pending',self:1});setReqs(L0);STF={role:rr,st:'pending',t:t0};svSTF();tx({k:'req',id:DV.id,label:DV.label,role:rr,t:t0});stfInit();return}
  if(a=='scancel'){setReqs(getReqs().filter(function(r){return r.id!=DV.id}));STF={};svSTF();stfInit();return}
@@ -743,10 +759,29 @@ function drv(){var mine=orders.filter(function(o){return o.drv==cd&&o.s==2}),dn=
  mine.forEach(function(o){h+='<div class="ord"><h4>Entrega</h4><p><b>'+esc(o.name)+'</b></p>'+mapSvg(o.loc)+''+drvPay(o)+'<p>📍 '+esc(o.ref)+'</p>'+(o.loc.gps?'<a class="b2 lk" target="_blank" rel="noopener" href="https://maps.google.com/?q='+o.loc.gps+'">Abrir en Google Maps</a>':'')+'<button class="cta" data-a="deliv" data-id="'+o.id+'">Marcar entregado</button></div>'});
  if(CLOUD&&APPMODE)h+='<div style="padding:12px"><button class="b2" data-a="staffout" style="width:100%;padding:10px">Cerrar sesión</button></div>';
  scr.innerHTML=h}
-var APPV='0.9.8',UPDSKIP='';
+var APPV='0.9.9',UPDSKIP='';
 function vnew(a,b){a=String(a).split('.');b=String(b).split('.');for(var i=0;i<4;i++){var x=+a[i]||0,y=+b[i]||0;if(x!=y)return x>y}return false}
 function showUpd(d,demo){var e=$('upd');e.innerHTML='<b>🐷 Nueva versión '+esc(d.v)+' disponible</b><ul>'+(d.notes||[]).map(function(n){return'<li>'+esc(n)+'</li>'}).join('')+'</ul><div class="ub"><button class="no" data-a="updno">Después</button><button class="go" data-a="updgo"'+(demo?' data-demo="1"':'')+'>Actualizar ahora</button></div>';e.hidden=false;e.dataset.v=d.v}
-function applyUpd(){window.UPDGO=true;var r=window.SWREG;if(!r){location.reload();return}var fin=function(w){w.postMessage('skip')};try{if(r.waiting){fin(r.waiting)}else{r.update().then(function(){if(r.waiting)fin(r.waiting);else if(r.installing){var w=r.installing;w.addEventListener('statechange',function(){if(w.state=='installed')fin(r.waiting||w)})}else location.reload()}).catch(function(){location.reload()})}}catch(e){location.reload()}setTimeout(function(){if(window.UPDGO)location.reload()},12000)}
+// Pantalla de actualización con el cerdito: cubre todo, la barra solo avanza, una sola recarga.
+var UPD={p:0,tick:0,fail:0,done:0,test:0,t0:0},RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
+function updBar(p){UPD.p=Math.max(UPD.p,Math.min(100,p));var b=$('pkupdb');if(b)b.style.width=UPD.p+'%'}
+function updVideo(){var v=$('pkupdv');if(!v)return;if(RM){v.removeAttribute('autoplay');try{v.pause()}catch(e){}return}try{var pr=v.play();if(pr&&pr.catch)pr.catch(function(){})}catch(e){}}
+function updShow(cb){var o=$('pkupd'),h=document.documentElement;$('pkupdt').textContent='Actualizando…';$('pkupdr').hidden=$('pkupdx').hidden=true;
+ if(h.classList.contains('pk-upd')){updVideo();cb&&cb();return}o.style.transition='opacity .15s ease';o.style.opacity=0;h.classList.add('pk-upd');updVideo();void o.offsetWidth;o.style.opacity=1;setTimeout(function(){cb&&cb()},160)}
+function updFail(){if(UPD.done)return;clearInterval(UPD.tick);clearTimeout(UPD.fail);window.UPDGO=false;$('pkupdt').textContent='No se pudo actualizar';$('pkupdr').hidden=$('pkupdx').hidden=false}
+function updDone(){if(UPD.done)return;UPD.done=1;var falta=Math.max(0,2400-(Date.now()-UPD.t0));setTimeout(function(){clearInterval(UPD.tick);clearTimeout(UPD.fail);updBar(100);try{sessionStorage.setItem('pk_upd','1')}catch(e){}
+ setTimeout(function(){if(UPD.test)location.replace(location.href.replace(/([?&])probar-actualizacion=1&?/,'$1').replace(/[?&]$/,''));else location.reload()},420)},falta)}
+window.updDone=updDone;
+function applyUpd(test){if(window.UPDGO)return;window.UPDGO=true;UPD.test=!!test;UPD.done=0;
+ updShow(function(){UPD.t0=Date.now();clearInterval(UPD.tick);UPD.tick=setInterval(function(){updBar(UPD.p+Math.max(.4,(90-UPD.p)*.07))},200);clearTimeout(UPD.fail);UPD.fail=setTimeout(updFail,15000);
+  if(test){setTimeout(updDone,3600);return}
+  var r=window.SWREG,fin=function(w){try{w.postMessage('skip')}catch(e){updFail()}};if(!r){updDone();return}
+  var esperar=function(w){if(w.state=='installed')return fin(w);w.addEventListener('statechange',function(){if(w.state=='installed')fin(w);else if(w.state=='redundant')updFail()})};
+  try{if(r.waiting)fin(r.waiting);else if(r.installing)esperar(r.installing);else r.update().then(function(){if(r.waiting)fin(r.waiting);else if(r.installing)esperar(r.installing);else updDone()}).catch(updFail)}catch(e){updFail()}})}
+// Al abrir la versión nueva: la pantalla sigue hasta que la app está lista y luego se desvanece.
+function updBoot(){var h=document.documentElement;if(!h.classList.contains('pk-boot'))return;try{sessionStorage.removeItem('pk_upd')}catch(e){}updVideo();var sp=$('splash');if(sp)sp.classList.add('out');
+ requestAnimationFrame(function(){requestAnimationFrame(function(){setTimeout(function(){var o=$('pkupd');o.style.transition='opacity .25s ease';o.style.opacity=0;setTimeout(function(){h.classList.remove('pk-upd','pk-boot');o.style.opacity='';entry()},260)},350)})})}
+setTimeout(function(){try{new Image().src='assets/carga/cerdito-poster.png'}catch(e){}},3000);
 function chkUpd(){if(location.protocol=='file:'||!navigator.onLine)return;try{if(window.SWREG)window.SWREG.update().catch(function(){})}catch(e){}try{fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.v&&vnew(d.v,APPV)&&UPDSKIP!=d.v)showUpd(d)}).catch(function(){})}catch(e){}}
 setTimeout(chkUpd,4500);setInterval(chkUpd,1800000);document.addEventListener('visibilitychange',function(){if(!document.hidden)chkUpd()});
 var DEMO=/demo/.test(location.hash),ROLE='client',PINS={owner:'2468',driver:'1357'};
@@ -934,7 +969,7 @@ if(CLOUD){ROLE='client';orders=orders.filter(function(o){return !o.demo});try{sb
  if(!APPMODE)sbReady().then(function(){home();sbMenuLive();return sbPerfil()}).then(sbOrders).then(function(){strip();badge();sbLiveSync();if(user)pushRelink();gAfter();
   if(location.hash=='#pedido'){try{history.replaceState(history.state,'',location.pathname+location.search)}catch(e){}if(cur())track()}}).catch(function(){})}
 try{$('splash').querySelector('small').textContent='Versión '+APPV+(CLOUD?'':' · prototipo')}catch(e){}
-home();setTimeout(function(){$('splash').classList.add('out');entry()},matchMedia('(prefers-reduced-motion:reduce)').matches?300:2600);
+home();updBoot();if(APPMODE&&/[?&]probar-actualizacion=1/.test(location.search))setTimeout(function(){applyUpd(true)},400);setTimeout(function(){$('splash').classList.add('out');entry()},matchMedia('(prefers-reduced-motion:reduce)').matches?300:2600);
 $('splash').onclick=function(){this.classList.add('out');entry()};
 function demoMenu(){var bt=function(v,l){return can(v)?'<button class="lg'+(view==v?' on':'')+'" data-a="dv" data-v="'+v+'">'+l+'</button>':''};open('<h3>'+(DEMO?'Demostración':'Cambiar de vista')+'</h3><div class="langs">'+bt('c',ROLE=='client'?'Cliente':'Pedir (cliente)')+bt('a','Administrador')+bt('r','Repartidor')+'</div>'+(ROLE!='client'?'<button class="cta wa" data-a="staffout">'+(APPMODE?(CLOUD?'Cerrar sesión':'Bloquear app (pedir PIN)'):'Cerrar sesión de personal')+'</button>':'')+(DEMO?'<button class="cta wa" data-a="exitapp">Salir del modo app</button>':'')+'<button class="cta" data-a="close">Cerrar</button>')}
 function setApp(on){document.body.classList.toggle('app',on);$('hnd').hidden=!(on&&(DEMO||(ROLE!='client'&&!(APPMODE&&ROLE=='driver'))))}
