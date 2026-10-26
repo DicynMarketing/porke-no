@@ -220,11 +220,15 @@ Deno.serve(async (req) => {
         if (s.sabor) sabor = s.sabor;
         componentes.push({ codigo: p.codigo, nombre: p.nombre, cantidad: it.cantidad ?? 1 });
       }
-      const unitario = centavos(c.precio);
+      // Doble carne en el combo: se cobra el extra de la hamburguesa que trae (p. ej. $1.50).
+      const doble = l.doble === true;
+      const conDoble = componentes.map((x) => porCodigo.get(x.codigo)).find((p) => p && p.extra_doble != null);
+      if (doble && !conDoble) return fallo(400, `${c.nombre} no se puede pedir doble.`);
+      const unitario = centavos(c.precio) + (doble ? centavos(conDoble.extra_doble) : 0);
       subtotal += unitario * cantidad;
       items.push({
         codigo: cod, nombre: c.nombre, seccion: porCodigo.get(componentes.find((x) => x.codigo !== "papas")?.codigo ?? "")?.seccion ?? "comida_rapida",
-        cantidad, doble: false, sabor, promo: true, combo: true, categoria: "Promoción", componentes,
+        cantidad, doble, sabor, promo: true, combo: true, categoria: "Promoción", componentes,
         precio_unitario: unitario / 100, importe: (unitario * cantidad) / 100,
       });
       continue;
