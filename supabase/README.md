@@ -1,5 +1,18 @@
 # Fase 1 · Conectar Porké No? a Supabase
 
+## ✅ Lista de pendientes en Supabase (se actualiza en cada cambio)
+Última versión de la app: **0.9.14**. Haz solo lo que todavía no hayas hecho, en este orden:
+
+| # | Qué | Dónde | Estado |
+|---|-----|-------|--------|
+| 1 | SQL `04-menu-y-promocion.sql` | SQL Editor › Run | Si no lo corriste, córrelo (se puede repetir) |
+| 2 | SQL `05-promociones.sql` | SQL Editor › Run | ✔ Hecho |
+| 3 | SQL `06-combos-con-papas.sql` | SQL Editor › Run | **Nuevo** |
+| 4 | Función `crear-pedido` (código de `supabase/functions/crear-pedido/index.ts`) | Edge Functions › crear-pedido › Code › Deploy | **Volver a subir** (promociones, combos y papas) |
+| 5 | Función `enviar-comprobante` | Edge Functions › enviar-comprobante › Code › Deploy | **Volver a subir** (combos en el correo) |
+| 6 | Función `enviar-push` | Edge Functions › enviar-push › Code › Deploy | Volver a subir si no lo hiciste desde la versión 0.9.8 |
+
+
 En esta rama `index.html` ya apunta al proyecto de Supabase de Porké No?. Si `SB_URL` y `SB_KEY` quedan vacías, la app funciona igual que el prototipo.
 
 Vista previa de esta rama (Cloudflare Pages): `https://fase-1-pedidos-en-vivo.porke-no.pages.dev` (cliente) y la misma dirección con `?app=equipo` al final (Admin y motorizado).

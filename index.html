@@ -316,7 +316,7 @@ function t(k,a){var s=T[k][li];return a===undefined?s:s.replace('{0}',a)}
 function payl(id,l){return T['p_'+id][l===undefined?li:l]}
 function fmt(n){return n.toFixed(2)}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}
-function find(id){if(isC(id)){var c=cmb(id)||{nombre:'Combo',precio:0,items:[]},f=findP((c.items[0]||{}).codigo);return[c.nombre,+c.precio,'',0,f?f[4]:'',null,cmbDesc(c)]}var a=id.split('-');return MENU[a[0]].i[a[1]]}
+function find(id){if(isC(id)){var c=cmb(id)||{nombre:'Combo',precio:0,items:[]},f=findP(((c.items||[]).filter(function(y){return !EXTRAS[y.codigo]})[0]||c.items[0]||{}).codigo);return[c.nombre,+c.precio,'',0,f?f[4]:'',null,cmbDesc(c)]}var a=id.split('-');return MENU[a[0]].i[a[1]]}
 function unit(p,d){return prc(p)+(d?1.5:0)}
 function itot(it){var s=0;it.forEach(function(x){s+=unit(find(x.id),x.d)*x.q});return s}
 function items(){return Object.keys(cart).map(function(k){return{id:cart[k].id,d:cart[k].d,f:cart[k].f,q:cart[k].q}})}
@@ -334,7 +334,7 @@ function isOpenC(k){var m=minPA(),h=HRS[k],a=mm(h.a),b=mm(h.b);return h.on&&(a<=
 function isOpen(){return isOpenC('ff')}
 function f12(s){var p=mm(s),h=Math.floor(p/60);return (h%12||12)+':'+pad(p%60)+(h<12?' a.m.':' p.m.')}
 var tab=isOpenC('bk')?'bk':'ff',ofl=isOpenC('ff')+''+isOpenC('bk');
-var EMO={to:'🫓',de:'🧀',em:'🥟',ch2:'🌭',ep:'🍗',ej:'🥪',jn:'🍊',jv:'🧃',tf:'🧋'};
+var EMO={pf:'🍟',to:'🫓',de:'🧀',em:'🥟',ch2:'🌭',ep:'🍗',ej:'🥪',jn:'🍊',jv:'🧃',tf:'🧋'};
 MENU.forEach(function(m){m.c='ff'});
 MENU.push({g:'Desayunos',c:'bk',i:[['Omelette',1,'',0,'om'],['Hot cakes',.5,'',0,'hc'],['Huevos revueltos',.75,'',0,'hr'],['Tortillas',.35,'',0,'to'],['Derretidos',1.25,'',0,'de'],['Empanadas',.65,'',0,'em'],['Chorizos',.75,'',0,'ch2'],['Emparedado de pollo',3,'',0,'ep'],['Emparedado de jamón',2.15,'',0,'ej']]});
 MENU.push({g:'Combos del miércoles',c:'ff',promo:1,hid:1,t:1,tt:'gp',dias:[3],i:[['Clásica con papas',5,'',0,'b','','Hamburguesa Clásica con papas fritas.'],['Cheese Burger con papas',5,'',0,'ch','','Cheese Burger con papas fritas.'],['Burger con Cebolla con papas',5,'',0,'oc','','Burger con Cebolla con papas fritas.']]});
@@ -342,7 +342,7 @@ T.g4=['🎉 Combos del miércoles','🎉 Wednesday combos','🎉 Combos de quart
 var PROMOT=0;
 function diaPA(){try{return['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].indexOf(new Intl.DateTimeFormat('en-US',{timeZone:'America/Panama',weekday:'short'}).format(new Date()))}catch(e){return new Date().getDay()}}
 function enDia(id){if(isC(id))return promoHoy(cmb(id));var a=String(id).split('-'),m=MENU[+a[0]],p=m&&m.i[+a[1]];if(!p)return false;var d=p[5]&&p[5].length?p[5]:m.dias;if(!d||!d.length)return true;if(PROMOT&&Date.now()<PROMOT)return true;return d.indexOf(diaPA())>=0}
-function abierto(id){if(isC(id)){var c=cmb(id);return !!c&&promoHoy(c)&&(c.items||[]).length>0&&c.items.every(function(x){return abierto(x.codigo)})}var g=+String(id).split('-')[0];return !!MENU[g]&&isOpenC(MENU[g].c||'ff')&&!OUT[id]&&enDia(id)}
+function abierto(id){if(EXTRAS[id])return true;if(isC(id)){var c=cmb(id);return !!c&&promoHoy(c)&&(c.items||[]).length>0&&c.items.every(function(x){return abierto(x.codigo)})}var g=+String(id).split('-')[0];return !!MENU[g]&&isOpenC(MENU[g].c||'ff')&&!OUT[id]&&enDia(id)}
 function tabsHtml(){return ['bk','ff'].map(function(k){var o=isOpenC(k),h=HRS[k];return'<button class="tb'+(tab==k?' sel':'')+(o?'':' off')+'" data-a="tab" data-k="'+k+'"><span class="te">'+(k=='bk'?'🍳':'🍔')+'</span><b>'+t(k=='bk'?'brk':'ff')+'</b><small>'+f12(h.a)+' – '+f12(h.b)+'</small><em>'+(o?'<i class="dot on"></i>'+t('open'):(h.on?t('opens',f12(h.a)):t('closed')))+'</em></button>'}).join('')}
 function dstr(d){return d.toLocaleDateString(['es','en','pt'][li],{day:'numeric',month:'short'})+' · '+d.toLocaleTimeString(['es','en','pt'][li],{hour:'2-digit',minute:'2-digit'})}
 (function(){var k='';for(var n=0;n<5;n++){var s=n*9;k+='@keyframes d'+n+'{0%,'+s+'%{opacity:0;transform:translateY(-24px)}'+(s+9)+'%,86%{opacity:1;transform:none}96%,100%{opacity:0}}'}var e=document.createElement('style');e.textContent=k;document.head.appendChild(e)})();
@@ -779,7 +779,7 @@ function drv(){var mine=orders.filter(function(o){return o.drv==cd&&o.s==2}),dn=
  mine.forEach(function(o){h+='<div class="ord"><h4>Entrega</h4><p><b>'+esc(o.name)+'</b></p>'+mapSvg(o.loc)+''+drvPay(o)+'<p>📍 '+esc(o.ref)+'</p>'+(o.loc.gps?'<a class="b2 lk" target="_blank" rel="noopener" href="https://maps.google.com/?q='+o.loc.gps+'">Abrir en Google Maps</a>':'')+'<button class="cta" data-a="deliv" data-id="'+o.id+'">Marcar entregado</button></div>'});
  if(CLOUD&&APPMODE)h+='<div style="padding:12px"><button class="b2" data-a="staffout" style="width:100%;padding:10px">Cerrar sesión</button></div>';
  scr.innerHTML=h}
-var APPV='0.9.13',UPDSKIP='';
+var APPV='0.9.14',UPDSKIP='';
 function vnew(a,b){a=String(a).split('.');b=String(b).split('.');for(var i=0;i<4;i++){var x=+a[i]||0,y=+b[i]||0;if(x!=y)return x>y}return false}
 function showUpd(d,demo){var e=$('upd');e.innerHTML='<b>🐷 Nueva versión '+esc(d.v)+' disponible</b><ul>'+(d.notes||[]).map(function(n){return'<li>'+esc(n)+'</li>'}).join('')+'</ul><div class="ub"><button class="no" data-a="updno">Después</button><button class="go" data-a="updgo"'+(demo?' data-demo="1"':'')+'>Actualizar ahora</button></div>';e.hidden=false;e.dataset.v=d.v}
 // Pantalla de actualización con el cerdito: cubre todo, la barra solo avanza, una sola recarga.
@@ -849,16 +849,16 @@ try{var _ss=JSON.parse(localStorage.getItem('pk_sess')||'null');if(_ss&&_ss.cart
 setInterval(function(){if(CLOUD&&!APPMODE&&SB&&SUC&&!document.hidden)sbHrsGet()},60000);
 var _sl='';setInterval(function(){try{var j=JSON.stringify({cart:cart,typ:typ,tab:tab});if(j!=_sl){_sl=j;localStorage.setItem('pk_sess',JSON.stringify({cart:cart,typ:typ,tab:tab,t:Date.now()}))}}catch(e){}},2000);
 // ---- Promociones (admin): precio especial por producto y combos, con días y botón Activar ----
-var PROMOS=[],COMBOS={},CMBX={},PDIAS=['D','L','M','M','J','V','S'],CED=null;
+var EXTRAS={papas:['Papas fritas',0,'Incluidas en el combo',0,'pf']},PROMOS=[],COMBOS={},CMBX={},PDIAS=['D','L','M','M','J','V','S'],CED=null;
 try{if(!CLOUD)PROMOS=JSON.parse(localStorage.getItem('pk_promos')||'[]')}catch(e){}
-function findP(id){var a=String(id).split('-'),m=MENU[+a[0]];return m&&m.i[+a[1]]}
+function findP(id){if(EXTRAS[id])return EXTRAS[id];var a=String(id).split('-'),m=MENU[+a[0]];return m&&m.i[+a[1]]}
 function isC(id){return String(id).indexOf('c:')==0}
 function cmb(id){var k=String(id).slice(2);return COMBOS[k]||CMBX[k]}
 function promoHoy(pr){return !!pr&&!!pr.activa&&(!pr.dias||!pr.dias.length||pr.dias.indexOf(diaPA())>=0||PROMOT>Date.now())}
 function prc(p){return p[7]&&promoHoy(p[7])?+p[7].precio:p[1]}
 function promosApply(){MENU.forEach(function(m){m.i.forEach(function(p){p[7]=null})});COMBOS={};PROMOS.forEach(function(pr){if(pr.tipo=='precio'){var p=findP(pr.producto_codigo);if(p)p[7]=pr}else COMBOS[pr.id]=pr})}
 function cmbDesc(c){return c.descripcion||(c.items||[]).map(function(x){var p=findP(x.codigo);return (x.cantidad||1)+' '+(p?p[0]:'')}).join(' + ')}
-function secc(id){if(isC(id)){var c=cmb(id),x=c&&c.items&&c.items[0];return x?secc(x.codigo):'ff'}var m=MENU[+String(id).split('-')[0]];return m&&m.c||'ff'}
+function secc(id){if(EXTRAS[id])return'ff';if(isC(id)){var c=cmb(id),x=c&&c.items&&(c.items.filter(function(y){return !EXTRAS[y.codigo]})[0]||c.items[0]);return x?secc(x.codigo):'ff'}var m=MENU[+String(id).split('-')[0]];return m&&m.c||'ff'}
 function diasTxt(d){var N=['dom','lun','mar','mié','jue','vie','sáb'];return d&&d.length?d.map(function(i){return N[i]}).join(', '):'todos los días'}
 function diasHtml(k,d){d=d||[];return'<div class="chs dch" data-k="'+k+'">'+PDIAS.map(function(x,i){return'<button class="ch'+(d.indexOf(i)>=0?' on':'')+'" data-a="pday" data-d="'+i+'">'+x+'</button>'}).join('')+'</div><p class="note" style="margin:0 0 6px">Sin días marcados = todos los días.</p>'}
 function diasDe(el){return [].map.call(el.querySelectorAll('.ch.on'),function(b){return +b.dataset.d}).sort()}
@@ -886,7 +886,8 @@ function cEdit(id){var c=id?COMBOS[id]:null;CED={id:id||'',nombre:c?c.nombre:'',
 function cCap(){if(!$('cnm'))return;CED.nombre=$('cnm').value;CED.descripcion=$('cds').value;CED.precio=$('cpr').value;var d=document.querySelector('#sheet .dch');if(d)CED.dias=diasDe(d);CED.activa=$('cac').checked}
 promosApply();
 function cSheet(msg){var tot=0;Object.keys(CED.items).forEach(function(k){var p=findP(k);if(p)tot+=p[1]*CED.items[k]});
- var h='<h3>'+(CED.id?'Editar combo':'Armar combo')+'</h3><label>Nombre del combo</label><input id="cnm" maxlength="60" value="'+esc(CED.nombre)+'" placeholder="Ej: Combo Clásica con soda"><label>Descripción (opcional)</label><input id="cds" maxlength="120" value="'+esc(CED.descripcion)+'" placeholder="Ej: Clásica, papas y soda"><label>Productos del combo</label><div class="cbox">';
+ var lnx=function(id,p,pr){var q=CED.items[id]||0;return'<div class="ln"><span>'+esc(p[0])+'<small class="pr">'+pr+'</small></span><span class="stp">'+(q?'<button data-a="cq" data-k="'+id+'" data-v="-1">−</button><b>'+q+'</b>':'')+'<button data-a="cq" data-k="'+id+'" data-v="1">+</button></span></div>'};
+ var h='<h3>'+(CED.id?'Editar combo':'Armar combo')+'</h3><label>Nombre del combo</label><input id="cnm" maxlength="60" value="'+esc(CED.nombre)+'" placeholder="Ej: Combo Clásica con soda"><label>Descripción (opcional)</label><input id="cds" maxlength="120" value="'+esc(CED.descripcion)+'" placeholder="Ej: Clásica, papas y soda"><label>Productos del combo</label><div class="cbox"><div class="sec">Incluido en el combo</div>'+Object.keys(EXTRAS).map(function(k){return lnx(k,EXTRAS[k],'incluidas · sin precio aparte')}).join('');
  MENU.forEach(function(m,g){if(m.hid)return;h+='<div class="sec">'+esc(m.g)+'</div>';m.i.forEach(function(p,i){var id=g+'-'+i,q=CED.items[id]||0;h+='<div class="ln"><span>'+esc(p[0])+'<small class="pr">$'+fmt(p[1])+'</small></span><span class="stp">'+(q?'<button data-a="cq" data-k="'+id+'" data-v="-1">−</button><b>'+q+'</b>':'')+'<button data-a="cq" data-k="'+id+'" data-v="1">+</button></span></div>'})});
  h+='</div><p class="note">Por separado costaría: <b>$'+fmt(tot)+'</b></p><label>Precio del combo</label><input id="cpr" inputmode="decimal" value="'+esc(CED.precio)+'" placeholder="Ej: 6.00"><label>Días de la promoción</label>'+diasHtml('cmb',CED.dias)+'<label class="sw2"><input type="checkbox" id="cac"'+(CED.activa?' checked':'')+'><i></i><span>Activar promoción</span></label><div class="err" id="er">'+(msg||'')+'</div><button class="cta" data-a="csave">Guardar combo</button>'+(CED.id?'<button class="cta red" data-dx data-xl="Sí, borrar combo" data-a="cdelc">Borrar combo</button>':'')+'<button class="cta wa" data-a="close">Cancelar</button>';
  var st=S.scrollTop;open(h);S.scrollTop=st}

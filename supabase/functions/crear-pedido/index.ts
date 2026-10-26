@@ -207,6 +207,10 @@ Deno.serve(async (req) => {
       const componentes = [];
       let sabor: string | null = null;
       for (const it of (c.items ?? []) as { codigo: string; cantidad?: number }[]) {
+        if (it.codigo === "papas") { // papas fritas incluidas en el combo (no es un producto aparte)
+          componentes.push({ codigo: "papas", nombre: "Papas fritas", cantidad: it.cantidad ?? 1 });
+          continue;
+        }
         const p = porCodigo.get(it.codigo);
         if (!p) return fallo(409, `${c.nombre} ya no está disponible. Quítalo de tu pedido.`);
         const err = revisar(p);
@@ -219,7 +223,7 @@ Deno.serve(async (req) => {
       const unitario = centavos(c.precio);
       subtotal += unitario * cantidad;
       items.push({
-        codigo: cod, nombre: c.nombre, seccion: porCodigo.get(componentes[0]?.codigo)?.seccion ?? "comida_rapida",
+        codigo: cod, nombre: c.nombre, seccion: porCodigo.get(componentes.find((x) => x.codigo !== "papas")?.codigo ?? "")?.seccion ?? "comida_rapida",
         cantidad, doble: false, sabor, promo: true, combo: true, categoria: "Promoción", componentes,
         precio_unitario: unitario / 100, importe: (unitario * cantidad) / 100,
       });
