@@ -1,1 +1,1 @@
-{"v": "0.9.15", "notes": ["Los productos en oferta salen en Promociones con el precio anterior tachado", "Combos con precio anterior tachado y opción Doble +$1.50"]}
+{"v": "0.9.16", "notes": ["Si una hamburguesa está en un combo de hoy, ya no sale en el menú normal (solo en Promociones)", "La app del equipo reintenta sola si falla la conexión y muestra el detalle del error"]}
