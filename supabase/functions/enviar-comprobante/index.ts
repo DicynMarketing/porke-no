@@ -56,7 +56,7 @@ function armar(p: any, local: string, suc: any): Correo {
   const fecha = new Date(p.creado_en).toLocaleString("es-PA", { timeZone: suc?.zona_horaria ?? "America/Panama", dateStyle: "medium", timeStyle: "short" });
   // deno-lint-ignore no-explicit-any
   const lineas = (p.productos ?? []).map((l: any) =>
-    [`${l.cantidad}× ${l.nombre}${l.doble ? " (doble)" : ""}${l.sabor ? ` · ${l.sabor}` : ""}${l.promo ? ` · ${l.categoria ?? "Promoción"}` : ""}`, dinero(l.importe)]);
+    [`${l.cantidad}× ${l.nombre}${l.doble ? " (doble)" : ""}${l.sabor ? ` · ${l.sabor}` : ""}${l.componentes?.length ? ` (${l.componentes.map((c: { cantidad: number; nombre: string }) => `${c.cantidad} ${c.nombre}`).join(", ")})` : ""}${l.promo ? ` · ${l.categoria ?? "Promoción"}` : ""}`, dinero(l.importe)]);
   const filas = [...lineas, ["Productos", dinero(p.subtotal)], ...(Number(p.envio) ? [["Envío", dinero(p.envio)]] : []), ["Servicio de la app", dinero(p.servicio)]];
   const aviso = "Este correo es un comprobante de tu pedido (recibo). No es una factura fiscal.";
   const html = `<!doctype html><html><body style="margin:0;background:#f4f4f4;font-family:Arial,sans-serif;color:#222">

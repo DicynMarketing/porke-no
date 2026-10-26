@@ -153,9 +153,10 @@ Deno.serve(async (req) => {
   const lineas = Array.isArray(b.items) ? (b.items as Linea[]) : [];
   if (!lineas.length) return fallo(400, "Tu pedido está vacío.");
   if (lineas.length > MAX_LINEAS) return fallo(400, "El pedido tiene demasiados productos.");
-  const codigos = [...new Set(lineas.map((l) => String(l?.codigo ?? "")))];
-  const { data: prods } = await db.from("productos").select("*").eq("sucursal_id", suc.id).in("codigo", codigos);
+  // Todos los productos y promociones activas de la sucursal (son pocos; los combos usan varios productos).
+  const { data: prods } = await db.from("productos").select("*").eq("sucursal_id", suc.id);
   const porCodigo = new Map((prods ?? []).map((p) => [p.codigo, p]));
+  const { data: promos } = await db.from("promociones").select("*").eq("sucursal_id", suc.id).eq("activa", true);
 
   // --- Horario de cada sección pedida ---
   const t = ahora(suc.zona_horaria);
@@ -163,43 +164,83 @@ Deno.serve(async (req) => {
     .eq("sucursal_id", suc.id).eq("dia_semana", t.dia);
   const horario = new Map((hrs ?? []).map((h) => [h.seccion, h]));
 
-  const items = [];
-  let subtotal = 0;
-  for (const l of lineas) {
-    const p = porCodigo.get(String(l?.codigo ?? ""));
-    if (!p) return fallo(400, "Uno de los productos ya no existe. Revisa tu pedido.");
-    if (!p.disponible) return fallo(409, `${p.nombre} ya no está disponible. Quítalo de tu pedido.`);
-    // Promociones por día (p. ej. combos de los miércoles): los días y el precio salen de la base de datos.
+  // Promociones: solo valen los días elegidos (o durante la prueba de 30 min del admin).
+  const prueba = !!suc.promo_prueba_hasta && new Date(suc.promo_prueba_hasta).getTime() > Date.now();
+  const hoy = (dias: number[] | null) => !dias?.length || dias.includes(t.dia) || prueba;
+  const precioPromo = new Map((promos ?? []).filter((x) => x.tipo === "precio" && hoy(x.dias)).map((x) => [x.producto_codigo, x]));
+  const combos = new Map((promos ?? []).filter((x) => x.tipo === "combo").map((x) => [`c:${x.id}`, x]));
+
+  // Revisa que un producto se pueda vender ahora; devuelve el mensaje de error o null.
+  // deno-lint-ignore no-explicit-any
+  const revisar = (p: any): string | null => {
+    if (!p.disponible) return `${p.nombre} ya no está disponible. Quítalo de tu pedido.`;
     const dias = Array.isArray(p.dias) ? (p.dias as number[]) : [];
-    const promo = dias.length > 0;
-    const prueba = suc.promo_prueba_hasta && new Date(suc.promo_prueba_hasta).getTime() > Date.now();
-    if (promo && !dias.includes(t.dia) && !prueba) {
-      return fallo(409, `${p.nombre} es una promoción de los ${dias.map((d) => NOMBRE_DIA[d]).join(" y ")}. Quítala de tu pedido.`);
-    }
-    const cantidad = Number(l.cantidad);
-    if (!Number.isInteger(cantidad) || cantidad < 1 || cantidad > MAX_CANTIDAD) {
-      return fallo(400, `Revisa la cantidad de ${p.nombre}.`);
-    }
-    const doble = l.doble === true;
-    if (doble && p.extra_doble == null) return fallo(400, `${p.nombre} no se puede pedir doble.`);
-    const sabores = (p.sabores ?? {}) as Record<string, boolean>;
-    let sabor: string | null = null;
-    if (Object.keys(sabores).length) {
-      sabor = typeof l.sabor === "string" ? l.sabor : null;
-      if (!sabor || !(sabor in sabores)) return fallo(400, `Elige el sabor de ${p.nombre}.`);
-      if (!sabores[sabor]) return fallo(409, `${p.nombre} ${sabor} está agotada. Elige otro sabor.`);
-    }
+    if (dias.length && !hoy(dias)) return `${p.nombre} es una promoción de los ${dias.map((d) => NOMBRE_DIA[d]).join(" y ")}. Quítala de tu pedido.`;
     const h = horario.get(p.seccion);
     if (!h || !abierto(h, t.minuto)) {
       const sec = SECCION[p.seccion] ?? p.seccion;
-      return fallo(409, h?.activo
-        ? `${sec} está cerrado ahora. Abrimos a las ${hora12(h.apertura)}.`
-        : `${sec} está cerrado ahora.`);
+      return h?.activo ? `${sec} está cerrado ahora. Abrimos a las ${hora12(h.apertura)}.` : `${sec} está cerrado ahora.`;
     }
-    const unitario = centavos(p.precio) + (doble ? centavos(p.extra_doble) : 0);
+    return null;
+  };
+  // deno-lint-ignore no-explicit-any
+  const revisarSabor = (p: any, pedido: unknown): { sabor: string | null; error: string | null } => {
+    const sabores = (p.sabores ?? {}) as Record<string, boolean>;
+    if (!Object.keys(sabores).length) return { sabor: null, error: null };
+    const sabor = typeof pedido === "string" ? pedido : null;
+    if (!sabor || !(sabor in sabores)) return { sabor: null, error: `Elige el sabor de ${p.nombre}.` };
+    if (!sabores[sabor]) return { sabor: null, error: `${p.nombre} ${sabor} está agotada. Elige otro sabor.` };
+    return { sabor, error: null };
+  };
+
+  const items = [];
+  let subtotal = 0;
+  for (const l of lineas) {
+    const cod = String(l?.codigo ?? "");
+    const cantidad = Number(l?.cantidad);
+    if (!Number.isInteger(cantidad) || cantidad < 1 || cantidad > MAX_CANTIDAD) return fallo(400, "Revisa las cantidades de tu pedido.");
+
+    // Combo armado por el administrador
+    if (cod.startsWith("c:")) {
+      const c = combos.get(cod);
+      if (!c || !hoy(c.dias)) return fallo(409, `${c?.nombre ?? "Esa promoción"} ya no está disponible hoy. Quítala de tu pedido.`);
+      const componentes = [];
+      let sabor: string | null = null;
+      for (const it of (c.items ?? []) as { codigo: string; cantidad?: number }[]) {
+        const p = porCodigo.get(it.codigo);
+        if (!p) return fallo(409, `${c.nombre} ya no está disponible. Quítalo de tu pedido.`);
+        const err = revisar(p);
+        if (err) return fallo(409, `${c.nombre}: ${err}`);
+        const s = revisarSabor(p, l.sabor);
+        if (s.error) return fallo(400, s.error);
+        if (s.sabor) sabor = s.sabor;
+        componentes.push({ codigo: p.codigo, nombre: p.nombre, cantidad: it.cantidad ?? 1 });
+      }
+      const unitario = centavos(c.precio);
+      subtotal += unitario * cantidad;
+      items.push({
+        codigo: cod, nombre: c.nombre, seccion: porCodigo.get(componentes[0]?.codigo)?.seccion ?? "comida_rapida",
+        cantidad, doble: false, sabor, promo: true, combo: true, categoria: "Promoción", componentes,
+        precio_unitario: unitario / 100, importe: (unitario * cantidad) / 100,
+      });
+      continue;
+    }
+
+    const p = porCodigo.get(cod);
+    if (!p) return fallo(400, "Uno de los productos ya no existe. Revisa tu pedido.");
+    const err = revisar(p);
+    if (err) return fallo(409, err);
+    const doble = l.doble === true;
+    if (doble && p.extra_doble == null) return fallo(400, `${p.nombre} no se puede pedir doble.`);
+    const s = revisarSabor(p, l.sabor);
+    if (s.error) return fallo(400, s.error);
+    const pp = precioPromo.get(p.codigo);
+    const promo = !!pp || (Array.isArray(p.dias) && p.dias.length > 0);
+    const unitario = centavos(pp ? pp.precio : p.precio) + (doble ? centavos(p.extra_doble) : 0);
     subtotal += unitario * cantidad;
     items.push({
-      codigo: p.codigo, nombre: p.nombre, seccion: p.seccion, cantidad, doble, sabor, promo, categoria: p.categoria,
+      codigo: p.codigo, nombre: p.nombre, seccion: p.seccion, cantidad, doble, sabor: s.sabor, promo,
+      categoria: pp ? "Promoción" : p.categoria,
       precio_unitario: unitario / 100, importe: (unitario * cantidad) / 100,
     });
   }

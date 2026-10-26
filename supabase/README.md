@@ -165,3 +165,22 @@ Se puede correr dos veces sin problema.
 **Table Editor** › `productos`:
 - Precio: columna `precio` (combos `4-0`, `4-1`, `4-2`; jugos y té `2-2`, `2-3`, `2-4`).
 - Día: columna `dias` (`{3}` = miércoles; `{3,5}` = miércoles y viernes; 0 = domingo … 6 = sábado). Vacío = todos los días.
+
+---
+
+# Paso 5 · Promociones editables (versión 0.9.12)
+
+## P. Correr el SQL
+**SQL Editor** › **New query** › pega todo `supabase/05-promociones.sql` › **Run** → *Success*.
+Crea la tabla de promociones y pasa los 3 combos de los miércoles a combos editables.
+
+## Q. Volver a subir dos funciones
+**Edge Functions** › entra a cada una › **Code** › pega la versión nueva › **Deploy** (Verify JWT apagado):
+- `crear-pedido` ← cobra los precios de promoción y los combos solo los días elegidos.
+- `enviar-comprobante` ← el correo muestra qué trae cada combo.
+
+## Cómo se usa (app del equipo › 🎉 Promociones)
+- **Precio normal:** cámbialo y toca **Guardar**.
+- **Precio de promoción de un producto:** escribe el precio, marca los días (D L M M J V S; sin días = todos) y enciende **Activar promoción**.
+- **Combos:** **＋ Armar combo** › nombre › toca **+** en los productos que lleva › precio › días › **Activar promoción** › **Guardar combo**.
+- **Probar otro día:** **Probar todas las promociones (30 min)**.
