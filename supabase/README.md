@@ -147,3 +147,21 @@ Si antes creaste la cuenta de motorizado de tu esposa con correo y contraseña, 
 - El cliente solo abre una conexión en tiempo real mientras tiene un pedido activo, y la cierra al salir de la app o al terminar el pedido. La tablet del administrador y el motorizado mantienen la suya.
 - Plan gratis de Supabase (datos de octubre 2026, verifícalos en https://supabase.com/pricing): 200 conexiones de tiempo real a la vez, 50,000 usuarios activos al mes, 500,000 llamadas a funciones al mes, base de datos de 500 MB, archivos 1 GB, 5 GB de tráfico al mes. **El proyecto gratis se pausa tras 1 semana sin uso.**
 - Con 200 a 300 clientes y picos de decenas a la vez, el plan gratis alcanza en capacidad, pero antes de abrir al público conviene el **plan Pro (desde 25 USD al mes)**: no se pausa, tiene copias de seguridad diarias y más margen (500 conexiones de tiempo real, 8 GB de base de datos).
+
+---
+
+# Paso 4 · Bebidas nuevas y combos de los miércoles (versión 0.9.10)
+
+## N. Correr el SQL
+**SQL Editor** › **New query** › pega todo `supabase/04-menu-y-promocion.sql` › **Run** → *Success*.
+Se puede correr dos veces sin problema.
+
+## O. Volver a subir dos funciones
+**Edge Functions** › entra a cada una › **Code** › pega la versión nueva › **Deploy** (Verify JWT sigue apagado):
+- `crear-pedido` ← `supabase/functions/crear-pedido/index.ts` (cobra el combo a $5.00 solo el día de la promoción).
+- `enviar-comprobante` ← `supabase/functions/enviar-comprobante/index.ts` (el correo dice "Promo miércoles" en el combo).
+
+## Cambiar precios o el día de la promoción
+**Table Editor** › `productos`:
+- Precio: columna `precio` (combos `4-0`, `4-1`, `4-2`; jugos y té `2-2`, `2-3`, `2-4`).
+- Día: columna `dias` (`{3}` = miércoles; `{3,5}` = miércoles y viernes; 0 = domingo … 6 = sábado). Vacío = todos los días.

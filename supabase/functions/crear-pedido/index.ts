@@ -22,6 +22,7 @@ const MAX_CANTIDAD = 50;
 const MAX_PEDIDOS_10_MIN = 5;
 const DIAS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const SECCION: Record<string, string> = { desayunos: "Desayunos", comida_rapida: "Comida rápida" };
+const NOMBRE_DIA = ["domingos", "lunes", "martes", "miércoles", "jueves", "viernes", "sábados"];
 
 type Linea = { codigo: string; cantidad: number; doble?: boolean; sabor?: string | null };
 
@@ -168,6 +169,13 @@ Deno.serve(async (req) => {
     const p = porCodigo.get(String(l?.codigo ?? ""));
     if (!p) return fallo(400, "Uno de los productos ya no existe. Revisa tu pedido.");
     if (!p.disponible) return fallo(409, `${p.nombre} ya no está disponible. Quítalo de tu pedido.`);
+    // Promociones por día (p. ej. combos de los miércoles): los días y el precio salen de la base de datos.
+    const dias = Array.isArray(p.dias) ? (p.dias as number[]) : [];
+    const promo = dias.length > 0;
+    const prueba = suc.promo_prueba_hasta && new Date(suc.promo_prueba_hasta).getTime() > Date.now();
+    if (promo && !dias.includes(t.dia) && !prueba) {
+      return fallo(409, `${p.nombre} es una promoción de los ${dias.map((d) => NOMBRE_DIA[d]).join(" y ")}. Quítala de tu pedido.`);
+    }
     const cantidad = Number(l.cantidad);
     if (!Number.isInteger(cantidad) || cantidad < 1 || cantidad > MAX_CANTIDAD) {
       return fallo(400, `Revisa la cantidad de ${p.nombre}.`);
@@ -191,7 +199,7 @@ Deno.serve(async (req) => {
     const unitario = centavos(p.precio) + (doble ? centavos(p.extra_doble) : 0);
     subtotal += unitario * cantidad;
     items.push({
-      codigo: p.codigo, nombre: p.nombre, seccion: p.seccion, cantidad, doble, sabor,
+      codigo: p.codigo, nombre: p.nombre, seccion: p.seccion, cantidad, doble, sabor, promo, categoria: p.categoria,
       precio_unitario: unitario / 100, importe: (unitario * cantidad) / 100,
     });
   }
