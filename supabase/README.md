@@ -1,7 +1,7 @@
 # Fase 1 · Conectar Porké No? a Supabase
 
 ## ✅ Lista de pendientes en Supabase (se actualiza en cada cambio)
-Última versión de la app: **0.9.18**. Haz solo lo que todavía no hayas hecho, en este orden:
+Última versión de la app: **0.9.19**. Haz solo lo que todavía no hayas hecho, en este orden:
 
 | # | Qué | Dónde | Estado |
 |---|-----|-------|--------|
