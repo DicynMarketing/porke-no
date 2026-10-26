@@ -177,7 +177,9 @@ Deno.serve(async (req) => {
     const dias = Array.isArray(p.dias) ? (p.dias as number[]) : [];
     if (dias.length && !hoy(dias)) return `${p.nombre} es una promoción de los ${dias.map((d) => NOMBRE_DIA[d]).join(" y ")}. Quítala de tu pedido.`;
     const h = horario.get(p.seccion);
-    if (!h || !abierto(h, t.minuto)) {
+    // Las bebidas se venden también en el horario de desayunos.
+    const hd = p.categoria === "Bebidas" ? horario.get("desayunos") : null;
+    if ((!h || !abierto(h, t.minuto)) && !(hd && abierto(hd, t.minuto))) {
       const sec = SECCION[p.seccion] ?? p.seccion;
       return h?.activo ? `${sec} está cerrado ahora. Abrimos a las ${hora12(h.apertura)}.` : `${sec} está cerrado ahora.`;
     }

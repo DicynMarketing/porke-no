@@ -1,7 +1,7 @@
 # Fase 1 · Conectar Porké No? a Supabase
 
 ## ✅ Lista de pendientes en Supabase (se actualiza en cada cambio)
-Última versión de la app: **0.9.17**. Haz solo lo que todavía no hayas hecho, en este orden:
+Última versión de la app: **0.9.18**. Haz solo lo que todavía no hayas hecho, en este orden:
 
 | # | Qué | Dónde | Estado |
 |---|-----|-------|--------|
@@ -9,7 +9,7 @@
 | 2 | SQL `05-promociones.sql` | SQL Editor › Run | ✔ Hecho |
 | 3 | SQL `06-combos-con-papas.sql` | SQL Editor › Run | ✔ Hecho |
 | 4 | SQL `07-jugo-del-valle.sql` | SQL Editor › Run | **Nuevo** (un solo jugo de naranja Del Valle) |
-| 5 | Función `crear-pedido` | Edge Functions › crear-pedido › Code | ✔ Hecho (versión con papas y doble en combos) |
+| 5 | Función `crear-pedido` (código de `supabase/functions/crear-pedido/index.ts`) | Edge Functions › crear-pedido › Code › Deploy | **Volver a subir** (bebidas también en horario de desayunos · cambió en 0.9.18) |
 | 6 | Secrets `VAPID_*` y `EMAIL_PROVIDER = none` | Edge Functions › Secrets | ✔ Hecho |
 | 7 | Función `enviar-push` | Edge Functions › enviar-push › Code › Deploy | Volver a subir si no lo hiciste desde la versión 0.9.8 |
 
