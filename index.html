@@ -329,7 +329,8 @@ function ord(id){return orders.filter(function(x){return x.id==id})[0]}
 function cur(){var d=today();return orders.filter(function(o){return !o.demo&&o.day==d&&!(o.s==3&&o.rate)})[0]}
 function mm(s){var p=(s||'0:0').split(':');return +p[0]*60+ +p[1]}
 var EDIT=false,OUT={};
-function isOpenC(k){var n=new Date(),m=n.getHours()*60+n.getMinutes(),h=HRS[k],a=mm(h.a),b=mm(h.b);return h.on&&(a<=b?m>=a&&m<b:m>=a||m<b)}
+function minPA(){try{var p=new Intl.DateTimeFormat('en-US',{timeZone:'America/Panama',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date()),g=function(t){return +p.filter(function(x){return x.type==t})[0].value};return g('hour')*60+g('minute')}catch(e){var n=new Date();return n.getHours()*60+n.getMinutes()}}
+function isOpenC(k){var m=minPA(),h=HRS[k],a=mm(h.a),b=mm(h.b);return h.on&&(a<=b?m>=a&&m<b:m>=a||m<b)}
 function isOpen(){return isOpenC('ff')}
 function f12(s){var p=mm(s),h=Math.floor(p/60);return (h%12||12)+':'+pad(p%60)+(h<12?' a.m.':' p.m.')}
 var tab=isOpenC('bk')?'bk':'ff',ofl=isOpenC('ff')+''+isOpenC('bk');
@@ -756,7 +757,7 @@ function admin(){var tk=today(),ro=selDay!=tk,d0=orders.filter(function(o){retur
    h+=sect((m.c=='bk'?'🍳 ':g==0?'🍔 ':g==1?'🍟 ':'🥤 ')+m.g,col,body,n+'/'+m.i.length+' disponibles')});
  }
  else if(admTab=='hor'){
-  h+=sect('Horario de atención','#ffc247',[['ff','🍔 Comida rápida'],['bk','🍳 Desayunos']].map(function(r){var x=HRS[r[0]];return'<div class="hrow"><span><b>'+r[1]+'</b></span>'+sw('data-hk="'+r[0]+'"',x.on,'Activo')+'<div class="tm"><input type="time" id="a_'+r[0]+'" value="'+x.a+'"><span>a</span><input type="time" id="b_'+r[0]+'" value="'+x.b+'"></div></div>'}).join(''))+sect('Promoción de los miércoles','#f7a8d4',PROMOT&&Date.now()<PROMOT?'<p class="note">🎉 Prueba activa: los combos se ven y se cobran a $5.00 hasta las <b>'+new Date(PROMOT).toLocaleTimeString('es-PA',{hour:'2-digit',minute:'2-digit'})+'</b>.</p><button class="b2" data-a="promop" data-m="0" style="width:100%;padding:10px">Terminar la prueba</button>':'<p class="note">Los combos salen solo los días de la promoción (hora de Panamá). Para probarla otro día, actívala por 30 minutos: la verán todos los clientes.</p><button class="b2" data-a="promop" data-m="30" style="width:100%;padding:10px">Probar como si fuera miércoles (30 min)</button>')+sect('Versión de la app','#b9a4ff','<p class="note">Versión instalada: <b>'+APPV+'</b>. Cuando subes una versión nueva, a los clientes les sale este aviso al abrir la app.</p><button class="b2" data-a="updtest" style="width:100%;padding:10px">Ver ejemplo del aviso</button>')+accSect();
+  h+=sect('Horario de atención','#ffc247','<p class="note">Hora de Panamá ahora: <b>'+f12(pad(Math.floor(minPA()/60))+':'+pad(minPA()%60))+'</b></p>'+[['ff','🍔 Comida rápida'],['bk','🍳 Desayunos']].map(function(r){var x=HRS[r[0]];return'<div class="hrow"><span><b>'+r[1]+'</b> '+(isOpenC(r[0])?'<small style="color:#3fe0a0">● Abierto ahora</small>':'<small style="color:#ff9aa8">● Cerrado ahora</small>')+'</span>'+sw('data-hk="'+r[0]+'"',x.on,'Activo')+'<div class="tm"><input type="time" id="a_'+r[0]+'" value="'+x.a+'"><span>a</span><input type="time" id="b_'+r[0]+'" value="'+x.b+'"></div></div>'}).join(''))+sect('Promoción de los miércoles','#f7a8d4',PROMOT&&Date.now()<PROMOT?'<p class="note">🎉 Prueba activa: los combos se ven y se cobran a $5.00 hasta las <b>'+new Date(PROMOT).toLocaleTimeString('es-PA',{hour:'2-digit',minute:'2-digit'})+'</b>.</p><button class="b2" data-a="promop" data-m="0" style="width:100%;padding:10px">Terminar la prueba</button>':'<p class="note">Los combos salen solo los días de la promoción (hora de Panamá). Para probarla otro día, actívala por 30 minutos: la verán todos los clientes.</p><button class="b2" data-a="promop" data-m="30" style="width:100%;padding:10px">Probar como si fuera miércoles (30 min)</button>')+sect('Versión de la app','#b9a4ff','<p class="note">Versión instalada: <b>'+APPV+'</b>. Cuando subes una versión nueva, a los clientes les sale este aviso al abrir la app.</p><button class="b2" data-a="updtest" style="width:100%;padding:10px">Ver ejemplo del aviso</button>')+accSect();
  }
  else{
   h+=sect('Repartidores','#5aa9ff','<div class="dv">'+DRV.map(function(d,i){return'<div class="dr"><i>'+esc(d.charAt(0).toUpperCase())+'</i><span>'+esc(d)+'</span><button data-dx data-a="rmdrv" data-n="'+i+'" aria-label="Quitar '+esc(d)+'">×</button></div>'}).join('')+'</div><div class="row2"><input type="text" id="nd" placeholder="Nombre del repartidor"><button class="b1" data-a="adddrv">Agregar</button></div>');
@@ -768,7 +769,7 @@ function drv(){var mine=orders.filter(function(o){return o.drv==cd&&o.s==2}),dn=
  mine.forEach(function(o){h+='<div class="ord"><h4>Entrega</h4><p><b>'+esc(o.name)+'</b></p>'+mapSvg(o.loc)+''+drvPay(o)+'<p>📍 '+esc(o.ref)+'</p>'+(o.loc.gps?'<a class="b2 lk" target="_blank" rel="noopener" href="https://maps.google.com/?q='+o.loc.gps+'">Abrir en Google Maps</a>':'')+'<button class="cta" data-a="deliv" data-id="'+o.id+'">Marcar entregado</button></div>'});
  if(CLOUD&&APPMODE)h+='<div style="padding:12px"><button class="b2" data-a="staffout" style="width:100%;padding:10px">Cerrar sesión</button></div>';
  scr.innerHTML=h}
-var APPV='0.9.10',UPDSKIP='';
+var APPV='0.9.11',UPDSKIP='';
 function vnew(a,b){a=String(a).split('.');b=String(b).split('.');for(var i=0;i<4;i++){var x=+a[i]||0,y=+b[i]||0;if(x!=y)return x>y}return false}
 function showUpd(d,demo){var e=$('upd');e.innerHTML='<b>🐷 Nueva versión '+esc(d.v)+' disponible</b><ul>'+(d.notes||[]).map(function(n){return'<li>'+esc(n)+'</li>'}).join('')+'</ul><div class="ub"><button class="no" data-a="updno">Después</button><button class="go" data-a="updgo"'+(demo?' data-demo="1"':'')+'>Actualizar ahora</button></div>';e.hidden=false;e.dataset.v=d.v}
 // Pantalla de actualización con el cerdito: cubre todo, la barra solo avanza, una sola recarga.
@@ -835,6 +836,7 @@ mk(1,'María','d','yappy',[{id:'0-1',d:false,q:1},{id:'2-0',d:false,q:2}],5,[0,2
 setInterval(function(){var d=today();if(d!=curDay){if(selDay==curDay)selDay=d;curDay=d;if(view=='a')admin();if(view=='c')home()}
  if(view=='c'){strip();var fl=isOpenC('ff')+''+isOpenC('bk')+(typeof diaPA=='function'?diaPA():'')+(PROMOT>Date.now());if(fl!=ofl){ofl=fl;home()}if(tr)track()}},20000);
 try{var _ss=JSON.parse(localStorage.getItem('pk_sess')||'null');if(_ss&&_ss.cart&&Date.now()-_ss.t<864e5){cart=_ss.cart;if(_ss.typ)typ=_ss.typ;if(_ss.tab)tab=_ss.tab}}catch(e){}
+setInterval(function(){if(CLOUD&&!APPMODE&&SB&&SUC&&!document.hidden)sbHrsGet()},60000);
 var _sl='';setInterval(function(){try{var j=JSON.stringify({cart:cart,typ:typ,tab:tab});if(j!=_sl){_sl=j;localStorage.setItem('pk_sess',JSON.stringify({cart:cart,typ:typ,tab:tab,t:Date.now()}))}}catch(e){}},2000);
 // ---- Nube (Supabase) · fase 1: pedidos en tiempo real. Sin SB_URL/SB_KEY no hace nada. ----
 var SB=null,SBP=null,SBR=null,SBL=0,SUC=null,ME=null,EQ=null,DRVID={},EST=['recibido','preparando','en_camino','entregado'],SECC={ff:'comida_rapida',bk:'desayunos'};
@@ -844,7 +846,7 @@ function sbLoad(){if(SBP)return SBP;SBP=new Promise(function(ok,ko){var x=docume
 var MENUT=0;
 function sbMenuApply(m){if(!m||!m.suc)return;var c=m.suc;PROMOT=c.promo_prueba_hasta?Date.parse(c.promo_prueba_hasta):0;FEE=+c.tarifa_entrega;SVC=+c.cargo_servicio;if(c.yappy)YAP=c.yappy;var bk=c.banco||{};if(bk.cuenta){BANKN=String(bk.cuenta).replace(/\D/g,'');BANK=[bk.banco||'',(bk.tipo||'Cuenta')+' '+bk.cuenta,'A nombre de: '+(bk.titular||'')]}
  (m.prod||[]).forEach(sbProd);(m.hrs||[]).forEach(sbHr)}
-function sbHr(h){if(h.dia_semana!=new Date().getDay())return;var k=h.seccion=='desayunos'?'bk':h.seccion=='comida_rapida'?'ff':null;if(k)HRS[k]={on:h.activo,a:h.apertura.slice(0,5),b:h.cierre.slice(0,5)}}
+function sbHr(h){if(h.dia_semana!=diaPA())return;var k=h.seccion=='desayunos'?'bk':h.seccion=='comida_rapida'?'ff':null;if(k)HRS[k]={on:h.activo,a:h.apertura.slice(0,5),b:h.cierre.slice(0,5)}}
 function sbMenu(){return Promise.all([SB.from('productos').select('*').eq('sucursal_id',SUC.id),SB.from('horarios').select('seccion,dia_semana,activo,apertura,cierre').eq('sucursal_id',SUC.id)]).then(function(rs){if(rs[0].error||rs[1].error)return;
  var m={suc:SUC,prod:rs[0].data||[],hrs:rs[1].data||[]};MENUT=Date.now();sbMenuApply(m);try{localStorage.setItem('pk_menu',JSON.stringify(m))}catch(e){}reRender()})}
 function sbSuc(){if(SUC)return Promise.resolve(SUC);return SB.from('sucursales').select('*').eq('slug',SB_SUC).single().then(function(r){if(r.error)throw r.error;SUC=r.data;return sbMenu()}).then(function(){return SUC})}
@@ -925,7 +927,7 @@ function cloudSend(o,btn){if(!user){login();return}if(btn.dataset.busy)return;bt
 function cloudReproof(o,d,btn){btn.disabled=true;sbReady().then(function(){return d=='wa'?null:sbUp(d)}).then(function(path){return SB.rpc('cliente_reenviar_comprobante',{p_pedido:o.id,p_path:path,p_whatsapp:d=='wa'})})
  .then(function(r){if(r.error)throw r.error;o.proof=d;o.ps='rev';proofData=null;clearInterval(pTm);onRow(r.data,false);shut();strip();toast(A('y_resent'))})
  .catch(function(e){btn.disabled=false;var m=e&&e.message||'No se pudo enviar. Intenta de nuevo.',er=$('er');if(er)er.textContent=m;else toast(m)})}
-function cloudHrs(k){if(!CLOUD||!SB||!SUC)return;var h=HRS[k];SB.from('horarios').update({activo:h.on,apertura:h.a,cierre:h.b}).eq('sucursal_id',SUC.id).eq('seccion',SECC[k]).then(function(r){if(r.error)toast('No se pudo guardar el horario')})}
+function cloudHrs(k){if(view=='a'&&admTab=='hor')setTimeout(admin,50);if(!CLOUD||!SB||!SUC)return;var h=HRS[k];SB.from('horarios').update({activo:h.on,apertura:h.a,cierre:h.b}).eq('sucursal_id',SUC.id).eq('seccion',SECC[k]).select('id').then(function(r){if(r.error||!r.data||!r.data.length)toast('No se pudo guardar el horario'+(r.error?': '+r.error.message:''));else toast('Horario guardado ✓')})}
 function cloudOut(id){if(!CLOUD||!SB||!SUC)return;var q=SB.from('productos').update({disponible:id?!OUT[id]:true}).eq('sucursal_id',SUC.id);if(id)q=q.eq('codigo',id);q.then(function(r){if(r.error)toast('No se pudo guardar el inventario')})}
 function cloudInv(){if(!CLOUD||!SB||!SUC)return;var s={};FLV.forEach(function(f){s[f]=!!INV[f]});SB.from('productos').update({sabores:s}).eq('sucursal_id',SUC.id).eq('codigo','2-0').then(function(r){if(r.error)toast('No se pudo guardar el inventario')})}
 function cloudStaff(){view='x';stfScreen('<h2>Porké No? · Equipo</h2><p>Conectando…</p>');
