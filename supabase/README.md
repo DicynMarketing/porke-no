@@ -1,7 +1,9 @@
 # Fase 1 · Conectar Porké No? a Supabase
 
 ## ✅ Lista de pendientes en Supabase (se actualiza en cada cambio)
-Última versión de la app: **0.9.20**. Haz solo lo que todavía no hayas hecho, en este orden:
+Última versión de la app: **0.9.21**. Haz solo lo que todavía no hayas hecho, en este orden:
+
+> Pendiente para más adelante: tarifas de delivery por zonas (hoy todo es $2.00, el mínimo; centro de Aguadulce y Pocrí = $2.00).
 
 | # | Qué | Dónde | Estado |
 |---|-----|-------|--------|
@@ -9,9 +11,11 @@
 | 2 | SQL `05-promociones.sql` | SQL Editor › Run | ✔ Hecho |
 | 3 | SQL `06-combos-con-papas.sql` | SQL Editor › Run | ✔ Hecho |
 | 4 | SQL `07-jugo-del-valle.sql` | SQL Editor › Run | ✔ Hecho |
-| 5 | Función `crear-pedido` (código de `supabase/functions/crear-pedido/index.ts`) | Edge Functions › crear-pedido › Code › Deploy | ✔ Hecho (versión 0.9.18: bebidas también en horario de desayunos) |
+| 5 | Función `crear-pedido` (código de `supabase/functions/crear-pedido/index.ts`) | Edge Functions › crear-pedido › Code › Deploy | **Volver a subir** (cupón de la tarjeta de sellos · cambió en 0.9.21) |
 | 6 | Secrets `VAPID_*` y `EMAIL_PROVIDER = none` | Edge Functions › Secrets | ✔ Hecho |
 | 7 | Función `enviar-push` | Edge Functions › enviar-push › Code › Deploy | Volver a subir si no lo hiciste desde la versión 0.9.8 |
+| 8 | SQL `08-tarjeta-de-sellos.sql` (correrlo ANTES del paso 5) | SQL Editor › Run | **Nuevo** (sellos, cupones y delivery mínimo $2.00) |
+| 9 | Función `enviar-comprobante` | Edge Functions › enviar-comprobante › Code › Deploy | No urgente: subir cuando actives Resend (el recibo muestra el cupón) |
 
 
 En esta rama `index.html` ya apunta al proyecto de Supabase de Porké No?. Si `SB_URL` y `SB_KEY` quedan vacías, la app funciona igual que el prototipo.

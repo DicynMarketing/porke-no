@@ -255,6 +255,30 @@ Deno.serve(async (req) => {
     });
   }
 
+  // --- Cupón de la tarjeta de sellos: una hamburguesa gratis ---
+  // Se regala la hamburguesa (sin promoción) más cara del pedido; si la pide doble, el extra se cobra.
+  let cupon: string | null = null;
+  if (typeof b.cupon === "string" && b.cupon) {
+    const { data: cp } = await db.from("cupones").select("id").eq("id", b.cupon).eq("cliente_id", user.id)
+      .eq("sucursal_id", suc.id).eq("estado", "disponible").maybeSingle();
+    if (!cp) return fallo(409, "Tu cupón ya no está disponible. Revisa tu pedido.");
+    let mejor = -1;
+    items.forEach((it, i) => {
+      const p = porCodigo.get(it.codigo);
+      if (it.promo || !p || p.categoria !== "Hamburguesas") return;
+      if (mejor < 0 || centavos(p.precio) > centavos(porCodigo.get(items[mejor].codigo).precio)) mejor = i;
+    });
+    if (mejor < 0) return fallo(400, "Agrega una hamburguesa a tu pedido para usar tu cupón.");
+    const it = items[mejor], base = centavos(porCodigo.get(it.codigo).precio), extra = Math.round(it.precio_unitario * 100) - base;
+    if (it.cantidad > 1) {
+      it.cantidad -= 1;
+      it.importe = Math.round(it.precio_unitario * 100 * it.cantidad) / 100;
+    } else items.splice(mejor, 1);
+    items.push({ ...it, cantidad: 1, cupon: true, categoria: "Cupón", precio_unitario: extra / 100, importe: extra / 100 });
+    subtotal -= base;
+    cupon = cp.id;
+  }
+
   // --- Freno a pedidos repetidos o de broma ---
   const hace10 = new Date(Date.now() - 10 * 60 * 1000).toISOString();
   const { count } = await db.from("pedidos").select("id", { count: "exact", head: true })
@@ -266,6 +290,13 @@ Deno.serve(async (req) => {
   // --- Totales (en centavos para no perder decimales) ---
   const envio = tipo === "delivery" ? centavos(suc.tarifa_entrega) : 0;
   const servicio = centavos(suc.cargo_servicio);
+
+  // El cupón se aparta antes de guardar el pedido (si dos pedidos lo usan a la vez, solo uno lo logra).
+  if (cupon) {
+    const { data: ok } = await db.from("cupones").update({ estado: "usado", usado_en: new Date().toISOString() })
+      .eq("id", cupon).eq("estado", "disponible").select("id");
+    if (!ok?.length) return fallo(409, "Tu cupón ya no está disponible. Revisa tu pedido.");
+  }
 
   await db.from("clientes").upsert({ id: user.id, nombre, celular: telefono, correo }, { onConflict: "id" });
 
@@ -288,8 +319,10 @@ Deno.serve(async (req) => {
   }).select("*").single();
 
   if (error) {
+    if (cupon) await db.from("cupones").update({ estado: "disponible", usado_en: null }).eq("id", cupon);
     console.error("crear-pedido", error);
     return fallo(500, "No se pudo guardar el pedido. Intenta de nuevo.");
   }
+  if (cupon) await db.from("cupones").update({ pedido_id: pedido.id }).eq("id", cupon);
   return json(200, { pedido });
 });
