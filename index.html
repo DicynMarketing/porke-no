@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<script>/* La app del equipo (/equipo/) guarda sus datos aparte de la app del cliente, aunque estén en el mismo teléfono. */
+(function(){try{var q=/[?&]app=(admin|driver|staff|equipo)/.test(location.search),pe=/^\/equipo(\/|$)/.test(location.pathname);
+ if(q&&!pe&&/pages\.dev$|porke/.test(location.hostname)){location.replace('/equipo/'+location.hash);return} // apps del equipo instaladas antes: pasan a su nueva dirección
+ var eq=q||pe;window.PK_EQ=eq;if(!eq)return;
+ var P=Storage.prototype,g=P.getItem,st=P.setItem,rm=P.removeItem,k=function(x){x=String(x);return /^(pk_sb_|sb-)/.test(x)?x:'eq:'+x};
+ P.getItem=function(x){return g.call(this,k(x))};P.setItem=function(x,v){return st.call(this,k(x),v)};P.removeItem=function(x){return rm.call(this,k(x))}}catch(e){}})();</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <link rel="manifest" href="manifest.json" id="pkman">
@@ -454,7 +460,7 @@ AT.c_svc=["Servicio de la app","App service fee","Taxa do app"];AT.c_svc2=["Serv
 AT.y_cam=["Tomar foto","Take photo","Tirar foto"];AT.y_wa=["Enviar comprobante por WhatsApp","Send receipt by WhatsApp","Enviar comprovante pelo WhatsApp"];AT.y_wadone=["WhatsApp abierto · ahora toca “Enviar comprobante y pedir”","WhatsApp opened · now tap “Send receipt and order”","WhatsApp aberto · agora toque em “Enviar comprovante e pedir”"];
 AT.y_copy=["Copiar","Copy","Copiar"];AT.y_copied=["Copiado","Copied","Copiado"];AT.l_conf=["Confirma tu ubicación","Confirm your location","Confirme sua localização"];AT.l_confb=["Confirmar ubicación","Confirm location","Confirmar localização"];AT.l_need=["Elige o agrega una ubicación para continuar.","Choose or add a location to continue.","Escolha ou adicione uma localização para continuar."];
 var locGate=false;window.addEventListener('click',function(e){if(!locGate)return;var t0=e.target;if(t0.id=='shade'||(t0.closest&&t0.closest('[data-a=close]'))){e.stopImmediatePropagation();e.preventDefault()}},true);
-(function(){try{var h=document.head,l=document.createElement('link');var AM=/[?&]app=(admin|driver|staff|equipo)/.test(location.search)?'admin':'';if(AM){document.title='Porké No? Equipo';document.getElementById('pkman').href='manifest-admin.json';document.getElementById('pkati').href='icons/equipo-apple-180.png';document.getElementById('pkatt').content='Porké No? Equipo'}if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(function(r){window.SWREG=r}).catch(function(){});navigator.serviceWorker.addEventListener('controllerchange',function(){if(window.UPDGO&&window.updDone&&!UPD.test)updDone()})}}catch(e){}})();
+(function(){try{var h=document.head,l=document.createElement('link');var AM=window.PK_EQ?'admin':'';if(AM){document.title='Porké No? Equipo';document.getElementById('pkman').href=/^\/equipo(\/|$)/.test(location.pathname)?'/equipo/manifest-admin.json':'manifest-admin.json';document.getElementById('pkati').href='icons/equipo-apple-180.png';document.getElementById('pkatt').content='Porké No? Equipo'}if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(function(r){window.SWREG=r}).catch(function(){});navigator.serviceWorker.addEventListener('controllerchange',function(){if(window.UPDGO&&window.updDone&&!UPD.test)updDone()})}}catch(e){}})();
 var IOSD=/iPhone|iPad|iPod/.test(navigator.userAgent);(function(){var n=document.getElementById('npush');if(n&&!IOSD)n.classList.add('andr')})();
 function nHtml(ic,ti,bo,first){if(IOSD)return'<div class="ni">'+ic+'</div><div><small>PORKÉ NO?'+(first?' · '+['ahora','now','agora'][li]:'')+'</small><b>'+ti+'</b><span>'+bo+'</span></div>';return'<div class="ai"><img src="'+LOGO+'" alt=""></div><div class="ni">'+ic+'</div><div class="nt"><b>'+ti+'</b><span>'+bo+'</span></div><s>⌄</s>'}
 function askNP(){if(CLOUD){if(!PUSHON&&!iosNoInst())pushOn(true);return}try{if('Notification' in window&&Notification.permission=='default'&&NT.on!==false)Notification.requestPermission()}catch(e){}}
@@ -791,7 +797,7 @@ function drv(){var mine=orders.filter(function(o){return o.drv==cd&&o.s==2}),dn=
  mine.forEach(function(o){h+='<div class="ord"><h4>Entrega</h4><p><b>'+esc(o.name)+'</b></p>'+mapSvg(o.loc)+''+drvPay(o)+'<p>📍 '+esc(o.ref)+'</p>'+(o.loc.gps?'<a class="b2 lk" target="_blank" rel="noopener" href="https://maps.google.com/?q='+o.loc.gps+'">Abrir en Google Maps</a>':'')+'<button class="cta" data-a="deliv" data-id="'+o.id+'">Marcar entregado</button></div>'});
  if(CLOUD&&APPMODE)h+='<div style="padding:12px"><button class="b2" data-a="staffout" style="width:100%;padding:10px">Cerrar sesión</button></div>';
  scr.innerHTML=h}
-var APPV='0.9.24',UPDSKIP='';
+var APPV='0.9.25',UPDSKIP='';
 function vnew(a,b){a=String(a).split('.');b=String(b).split('.');for(var i=0;i<4;i++){var x=+a[i]||0,y=+b[i]||0;if(x!=y)return x>y}return false}
 function showUpd(d,demo){var e=$('upd');e.innerHTML='<b>🐷 Nueva versión '+esc(d.v)+' disponible</b><ul>'+(d.notes||[]).map(function(n){return'<li>'+esc(n)+'</li>'}).join('')+'</ul><div class="ub"><button class="no" data-a="updno">Después</button><button class="go" data-a="updgo"'+(demo?' data-demo="1"':'')+'>Actualizar ahora</button></div>';e.hidden=false;e.dataset.v=d.v}
 // Pantalla de actualización con el cerdito: cubre todo, la barra solo avanza, una sola recarga.
@@ -818,7 +824,7 @@ function chkUpd(){if(location.protocol=='file:'||!navigator.onLine)return;try{if
 setTimeout(chkUpd,4500);setInterval(chkUpd,1800000);document.addEventListener('visibilitychange',function(){if(!document.hidden)chkUpd()});
 var DEMO=/demo/.test(location.hash),ROLE='client',PINS={owner:'2468',driver:'1357'};
 try{ROLE=localStorage.getItem('pk_role')||'client';var _p=JSON.parse(localStorage.getItem('pk_pins')||'null');if(_p&&_p.owner&&_p.driver)PINS=_p}catch(e){}
-var APPMODE=/[?&]app=(admin|driver|staff|equipo)/.test(location.search)?'admin':'';
+var APPMODE=window.PK_EQ?'admin':'';if(CLOUD&&!APPMODE)ROLE='client';
 function staffGate(){stfInit()}
 function can(v){if(APPMODE){if(ROLE=='driver')return v=='r';return ROLE=='owner'&&(v=='a'||v=='r')}return v=='c'||DEMO||(v=='r'&&ROLE!='client')||(v=='a'&&ROLE=='owner')}
 function saveRole(){try{localStorage.setItem('pk_role',ROLE)}catch(e){}}
