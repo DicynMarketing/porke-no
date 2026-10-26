@@ -3,8 +3,9 @@
 <head>
 <script>/* La app del equipo (/equipo/) guarda sus datos aparte de la app del cliente, aunque estén en el mismo teléfono. */
 (function(){try{var q=/[?&]app=(admin|driver|staff|equipo)/.test(location.search),pe=/^\/equipo(\/|$)/.test(location.pathname);
- if(q&&!pe&&/pages\.dev$|porke/.test(location.hostname)){location.replace('/equipo/'+location.hash);return} // apps del equipo instaladas antes: pasan a su nueva dirección
- var eq=q||pe;window.PK_EQ=eq;if(!eq)return;
+ // Apps del equipo instaladas antes (?app=equipo): pasan a /equipo/ solo si esa dirección ya responde bien.
+ if(q&&!pe&&/pages\.dev$|porke/.test(location.hostname)&&window.fetch){fetch('/equipo/manifest-admin.json',{cache:'no-store'}).then(function(r){if(r.ok&&/json/.test(r.headers.get('content-type')||''))location.replace('/equipo/'+location.hash)}).catch(function(){})}
+ var eq=q||pe;window.PK_EQ=eq;if(!eq||!pe)return;
  var P=Storage.prototype,g=P.getItem,st=P.setItem,rm=P.removeItem,k=function(x){x=String(x);return /^(pk_sb_|sb-)/.test(x)?x:'eq:'+x};
  P.getItem=function(x){return g.call(this,k(x))};P.setItem=function(x,v){return st.call(this,k(x),v)};P.removeItem=function(x){return rm.call(this,k(x))}}catch(e){}})();</script>
 <meta charset="utf-8">
