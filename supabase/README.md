@@ -8,7 +8,7 @@
 | 1 | SQL `04-menu-y-promocion.sql` | SQL Editor › Run | ✔ Hecho |
 | 2 | SQL `05-promociones.sql` | SQL Editor › Run | ✔ Hecho |
 | 3 | SQL `06-combos-con-papas.sql` | SQL Editor › Run | ✔ Hecho |
-| 4 | SQL `07-jugo-del-valle.sql` | SQL Editor › Run | **Nuevo** (un solo jugo de naranja Del Valle) |
+| 4 | SQL `07-jugo-del-valle.sql` | SQL Editor › Run | ✔ Hecho |
 | 5 | Función `crear-pedido` (código de `supabase/functions/crear-pedido/index.ts`) | Edge Functions › crear-pedido › Code › Deploy | ✔ Hecho (versión 0.9.18: bebidas también en horario de desayunos) |
 | 6 | Secrets `VAPID_*` y `EMAIL_PROVIDER = none` | Edge Functions › Secrets | ✔ Hecho |
 | 7 | Función `enviar-push` | Edge Functions › enviar-push › Code › Deploy | Volver a subir si no lo hiciste desde la versión 0.9.8 |
