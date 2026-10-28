@@ -1,7 +1,7 @@
 # Fase 1 · Conectar Porké No? a Supabase
 
 ## ✅ Lista de pendientes en Supabase (se actualiza en cada cambio)
-Última versión de la app: **0.9.30**. Haz solo lo que todavía no hayas hecho, en este orden:
+Última versión de la app: **0.10.0**. Haz solo lo que todavía no hayas hecho, en este orden:
 
 > Pendiente para más adelante: tarifas de delivery por zonas (hoy todo es $2.00, el mínimo; centro de Aguadulce y Pocrí = $2.00).
 
@@ -13,9 +13,15 @@
 | 4 | SQL `07-jugo-del-valle.sql` | SQL Editor › Run | ✔ Hecho |
 | 5 | Función `crear-pedido` (código de `supabase/functions/crear-pedido/index.ts`) | Edge Functions › crear-pedido › Code › Deploy | ✔ Hecho (versión 0.9.21: cupón de la tarjeta de sellos) |
 | 6 | Secrets `VAPID_*` y `EMAIL_PROVIDER = none` | Edge Functions › Secrets | ✔ Hecho |
-| 7 | Función `enviar-push` | Edge Functions › enviar-push › Code › Deploy | Volver a subir si no lo hiciste desde la versión 0.9.8 |
+| 7 | Función `enviar-push` | Edge Functions › enviar-push › Code › Deploy | Reemplazado por el paso 12 |
 | 8 | SQL `08-tarjeta-de-sellos.sql` (correrlo ANTES del paso 5) | SQL Editor › Run | ✔ Hecho |
 | 9 | Función `enviar-comprobante` | Edge Functions › enviar-comprobante › Code › Deploy | No urgente: subir cuando actives Resend (el recibo muestra el cupón) |
+| 10 | SQL `09-plan-1-al-11.sql` | SQL Editor › Run | **Nuevo** (eliminar cuenta, espera, programados, repartidor en el mapa, avisos de promociones) |
+| 11 | Función `crear-pedido` | Edge Functions › crear-pedido › Code › Deploy | **Volver a subir** (pedidos programados · cambió en 0.10.0) — después del paso 10 |
+| 12 | Función `enviar-push` | Edge Functions › enviar-push › Code › Deploy | **Volver a subir** ("Pedido tomado" y avisos de promociones · cambió en 0.10.0) |
+| 13 | Respaldo diario (GitHub) | GitHub › Settings › Secrets and variables › Actions | **Nuevo**: crear `SUPABASE_DB_URL` y `RESPALDO_CLAVE` (ver "Respaldo diario" abajo) |
+| 14 | Recibos por correo (Resend) | Edge Functions › Secrets | Opcional: `EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, `EMAIL_FROM` y volver a subir `enviar-comprobante` |
+| 15 | Aviso de errores (Sentry) | — | Opcional: crear el proyecto en sentry.io y pasarme la DSN (es pública) |
 
 
 En esta rama `index.html` ya apunta al proyecto de Supabase de Porké No?. Si `SB_URL` y `SB_KEY` quedan vacías, la app funciona igual que el prototipo.
@@ -202,3 +208,16 @@ Crea la tabla de promociones y pasa los 3 combos de los miércoles a combos edit
 - **Precio de promoción de un producto:** escribe el precio, marca los días (D L M M J V S; sin días = todos) y enciende **Activar promoción**.
 - **Combos:** **＋ Armar combo** › nombre › toca **+** en los productos que lleva › precio › días › **Activar promoción** › **Guardar combo**.
 - **Probar otro día:** **Probar todas las promociones (30 min)**.
+
+
+## Respaldo diario (gratis, GitHub Actions)
+El archivo `.github/workflows/respaldo.yml` copia cada día (3:17 a.m. de Panamá) la base de datos, la comprime y la **cifra** con tu contraseña. El repositorio es público: sin la contraseña nadie puede abrir el respaldo. Cada copia se guarda 30 días.
+
+1. Supabase › botón **Connect** (arriba) › pestaña **Connection string** › **Session pooler** › copia la dirección. Cambia `[YOUR-PASSWORD]` por la contraseña de la base de datos (la que guardaste al crear el proyecto; si no la tienes: Project Settings › Database › Reset database password).
+2. GitHub › repositorio porke-no › **Settings** › **Secrets and variables** › **Actions** › **New repository secret**:
+   - Name `SUPABASE_DB_URL` · Secret: la dirección del paso 1.
+   - Name `RESPALDO_CLAVE` · Secret: una contraseña larga que solo tú conozcas. Guárdala en un lugar seguro: sin ella no se puede abrir ningún respaldo.
+3. Para que corra solo cada día, GitHub exige que este archivo esté en la rama principal (`main`). Se pasa solo con tu permiso.
+4. Para probarlo: **Actions** › **Respaldo diario** › **Run workflow**. Al terminar, abajo aparece el archivo `respaldo-AAAA-MM-DD.tar.gz.gpg`.
+
+Restaurar (lo hace el técnico): `gpg -d respaldo-….tar.gz.gpg | tar -xzf -` y luego `psql "<conexión>" -f public.sql` en un proyecto nuevo. No incluye las fotos de comprobantes (Storage).

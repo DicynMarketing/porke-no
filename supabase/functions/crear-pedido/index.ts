@@ -46,11 +46,11 @@ const centavos = (n: number | string) => Math.round(Number(n) * 100);
 const texto = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slice(0, max) : "");
 
 // Día de la semana y minuto del día en la zona horaria del local.
-function ahora(zona: string) {
+function ahora(zona: string, cuando = new Date()) {
   const p = Object.fromEntries(
     new Intl.DateTimeFormat("en-US", {
       timeZone: zona, weekday: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
-    }).formatToParts(new Date()).map((x) => [x.type, x.value]),
+    }).formatToParts(cuando).map((x) => [x.type, x.value]),
   );
   return { dia: DIAS.indexOf(p.weekday), minuto: Number(p.hour) * 60 + Number(p.minute) };
 }
@@ -158,8 +158,18 @@ Deno.serve(async (req) => {
   const porCodigo = new Map((prods ?? []).map((p) => [p.codigo, p]));
   const { data: promos } = await db.from("promociones").select("*").eq("sucursal_id", suc.id).eq("activa", true);
 
+  // --- Pedido programado: todo (horario, días de promoción) se revisa a la hora elegida ---
+  let programado: Date | null = null;
+  if (typeof b.programado_para === "string" && b.programado_para) {
+    programado = new Date(b.programado_para);
+    const falta = programado.getTime() - Date.now();
+    if (!Number.isFinite(falta)) return fallo(400, "Elige una hora válida para tu pedido.");
+    if (falta < 20 * 60 * 1000) return fallo(400, "Programa tu pedido con al menos 20 minutos de anticipación.");
+    if (falta > 48 * 60 * 60 * 1000) return fallo(400, "Puedes programar tu pedido hasta con 2 días de anticipación.");
+  }
+
   // --- Horario de cada sección pedida ---
-  const t = ahora(suc.zona_horaria);
+  const t = ahora(suc.zona_horaria, programado ?? new Date());
   const { data: hrs } = await db.from("horarios").select("seccion, activo, apertura, cierre")
     .eq("sucursal_id", suc.id).eq("dia_semana", t.dia);
   const horario = new Map((hrs ?? []).map((h) => [h.seccion, h]));
@@ -181,7 +191,8 @@ Deno.serve(async (req) => {
     const hd = p.categoria === "Bebidas" ? horario.get("desayunos") : null;
     if ((!h || !abierto(h, t.minuto)) && !(hd && abierto(hd, t.minuto))) {
       const sec = SECCION[p.seccion] ?? p.seccion;
-      return h?.activo ? `${sec} está cerrado ahora. Abrimos a las ${hora12(h.apertura)}.` : `${sec} está cerrado ahora.`;
+      if (programado) return `${sec} está cerrado a la hora que elegiste. Elige otra hora.`;
+      return h?.activo ? `${sec} está cerrado ahora. Abrimos a las ${hora12(h.apertura)}. Puedes programar tu pedido.` : `${sec} está cerrado ahora.`;
     }
     return null;
   };
@@ -316,6 +327,7 @@ Deno.serve(async (req) => {
     estado_pago: conComprobante ? "en_revision" : "por_cobrar",
     comprobante_path: comprobante,
     comprobante_whatsapp: porWhatsapp,
+    programado_para: programado ? programado.toISOString() : null,
   }).select("*").single();
 
   if (error) {

@@ -55,6 +55,14 @@ async function armar(db: any, f: Fila): Promise<Aviso | null> {
       body: f.datos.notas || `Abre la app y toca "Actualizar ahora" (versión ${f.datos.v}).`,
     };
   }
+  if (f.tipo === "promo") {
+    // Solo clientes que activaron "Promociones" en Mi cuenta › Notificaciones.
+    const { data: cs } = await db.from("clientes").select("id").eq("notif_promos", true).limit(5000);
+    return {
+      usuarios: (cs ?? []).map((c: { id: string }) => c.id), app: "cliente", tag: `promo-${f.id}`, image: IMG("recibido"),
+      title: f.datos.titulo || "🎉 Promoción en Porké No?", body: f.datos.texto || "",
+    };
+  }
   if (f.tipo === "solicitud") {
     const { data: sol } = await db.from("solicitudes_acceso").select("*").eq("id", f.solicitud_id).maybeSingle();
     if (!sol || sol.estado !== "pendiente") return null;
@@ -95,7 +103,7 @@ async function armar(db: any, f: Fila): Promise<Aviso | null> {
       : { ...cliente, tag: tagPago, image: IMG("recibido"), title: "Verifica tu pago", body: `Pedido #${p.numero} · No vimos el pago en la cuenta del local. Toca para ver opciones.` };
   }
   const textos: Record<string, [string, string]> = {
-    preparando: ["Preparando tu pedido", "Nuestro cocinero ya está en eso 🔥"],
+    preparando: ["✅ Pedido tomado", "Ya lo estamos preparando 🔥"],
     en_camino: delivery
       ? ["¡Tu pedido va en camino!", "El repartidor va hacia ti 🛵"]
       : ["¡Tu pedido está listo!", "Ya puedes pasar a recogerlo 🛍️"],
