@@ -16,9 +16,9 @@
 | 7 | Función `enviar-push` | Edge Functions › enviar-push › Code › Deploy | Reemplazado por el paso 12 |
 | 8 | SQL `08-tarjeta-de-sellos.sql` (correrlo ANTES del paso 5) | SQL Editor › Run | ✔ Hecho |
 | 9 | Función `enviar-comprobante` | Edge Functions › enviar-comprobante › Code › Deploy | No urgente: subir cuando actives Resend (el recibo muestra el cupón) |
-| 10 | SQL `09-plan-1-al-11.sql` | SQL Editor › Run | **Nuevo** (eliminar cuenta, espera, programados, repartidor en el mapa, avisos de promociones) |
-| 11 | Función `crear-pedido` | Edge Functions › crear-pedido › Code › Deploy | **Volver a subir** (pedidos programados · cambió en 0.10.0) — después del paso 10 |
-| 12 | Función `enviar-push` | Edge Functions › enviar-push › Code › Deploy | **Volver a subir** ("Pedido tomado" y avisos de promociones · cambió en 0.10.0) |
+| 10 | SQL `09-plan-1-al-11.sql` | SQL Editor › Run | ✔ Hecho |
+| 11 | Función `crear-pedido` | Edge Functions › crear-pedido › Code › Deploy | ✔ Hecho (versión 0.10.0) |
+| 12 | Función `enviar-push` | Edge Functions › enviar-push › Code › Deploy | ✔ Hecho (versión 0.10.0) |
 | 13 | Respaldo diario (GitHub) | GitHub › Settings › Secrets and variables › Actions | ✔ Secretos creados · falta poner el archivo del respaldo en `main` (con permiso del dueño) |
 | 14 | Recibos por correo (Resend) | Edge Functions › Secrets | Opcional: `EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, `EMAIL_FROM` y volver a subir `enviar-comprobante` |
 | 15 | Aviso de errores (Sentry) | — | Opcional: crear el proyecto en sentry.io y pasarme la DSN (es pública) |
