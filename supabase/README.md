@@ -19,7 +19,7 @@
 | 10 | SQL `09-plan-1-al-11.sql` | SQL Editor › Run | ✔ Hecho |
 | 11 | Función `crear-pedido` | Edge Functions › crear-pedido › Code › Deploy | ✔ Hecho (versión 0.10.0) |
 | 12 | Función `enviar-push` | Edge Functions › enviar-push › Code › Deploy | ✔ Hecho (versión 0.10.0) |
-| 13 | Respaldo diario (GitHub) | GitHub › Settings › Secrets and variables › Actions | ✔ Secretos creados · falta poner el archivo del respaldo en `main` (con permiso del dueño) |
+| 13 | Respaldo diario (GitHub) | GitHub › Settings › Secrets and variables › Actions | ✔ Hecho: corre solo cada día; primera copia el 2026-10-28 |
 | 14 | Recibos por correo (Resend) | Edge Functions › Secrets | Opcional: `EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, `EMAIL_FROM` y volver a subir `enviar-comprobante` |
 | 15 | Aviso de errores (Sentry) | — | Opcional: crear el proyecto en sentry.io y pasarme la DSN (es pública) |
 
@@ -217,7 +217,7 @@ El archivo `.github/workflows/respaldo.yml` copia cada día (3:17 a.m. de Panam�
 2. GitHub › repositorio porke-no › **Settings** › **Secrets and variables** › **Actions** › **New repository secret**:
    - Name `SUPABASE_DB_URL` · Secret: la dirección del paso 1.
    - Name `RESPALDO_CLAVE` · Secret: una contraseña larga que solo tú conozcas. Guárdala en un lugar seguro: sin ella no se puede abrir ningún respaldo.
-3. Para que corra solo cada día, GitHub exige que este archivo esté en la rama principal (`main`). Se pasa solo con tu permiso.
+3. El archivo ya está en la rama principal (`main`), autorizado por el dueño: corre solo cada día.
 4. Para probarlo: **Actions** › **Respaldo diario** › **Run workflow**. Al terminar, abajo aparece el archivo `respaldo-AAAA-MM-DD.tar.gz.gpg`.
 
 Restaurar (lo hace el técnico): `gpg -d respaldo-….tar.gz.gpg | tar -xzf -` y luego `psql "<conexión>" -f public.sql` en un proyecto nuevo. No incluye las fotos de comprobantes (Storage).
