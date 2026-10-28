@@ -1,7 +1,7 @@
 # Fase 1 · Conectar Porké No? a Supabase
 
 ## ✅ Lista de pendientes en Supabase (se actualiza en cada cambio)
-Última versión de la app: **0.11.2**. Haz solo lo que todavía no hayas hecho, en este orden:
+Última versión de la app: **0.11.3**. Haz solo lo que todavía no hayas hecho, en este orden:
 
 > Pendiente para más adelante: tarifas de delivery por zonas (hoy todo es $2.00, el mínimo; centro de Aguadulce y Pocrí = $2.00).
 
@@ -27,6 +27,8 @@
 | 18 | Función `enviar-push` | Edge Functions › enviar-push › Code › Deploy | **Volver a subir** (motivo de cancelación · cambió en 0.11.0) |
 | 19 | Estadísticas de uso (PostHog) | — | Opcional: crear el proyecto en posthog.com y pasarme la clave pública (empieza con `phc_`) |
 | 20 | Cajero (cuando lo contrates) | Authentication › Users › Add user, y luego SQL: `select public.agregar_equipo('correo', 'aguadulce', 'cajero', 'Nombre');` | Más adelante |
+| 21 | SQL `11-pantalla-de-cocina.sql` | SQL Editor › Run | **Nuevo** (la cocina pide acceso como el motorizado) — después del paso 16 |
+| 22 | Función `enviar-push` | Edge Functions › enviar-push › Code › Deploy | **Volver a subir** (aviso de solicitud de cocina · cambió en 0.11.3; reemplaza al paso 18) |
 
 
 En esta rama `index.html` ya apunta al proyecto de Supabase de Porké No?. Si `SB_URL` y `SB_KEY` quedan vacías, la app funciona igual que el prototipo.

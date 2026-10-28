@@ -1,1 +1,1 @@
-{"v": "0.11.2", "notes": ["Equipo: enlace directo para administrador, cocina, motorizado y cajero"]}
+{"v": "0.11.3", "notes": ["Equipo: botón Cerrar sesión en todas las pantallas", "La pantalla de cocina pide acceso como el motorizado (sin contraseña) y el admin la aprueba", "Opción Cajero: muestra solo Pedidos"]}

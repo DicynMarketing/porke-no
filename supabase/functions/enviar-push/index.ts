@@ -68,7 +68,8 @@ async function armar(db: any, f: Fila): Promise<Aviso | null> {
     if (!sol || sol.estado !== "pendiente") return null;
     return {
       usuarios: await admins(db, sol.sucursal_id), app: "equipo", tag: `solicitud-${sol.id}`,
-      title: "🛵 Solicitud de acceso", body: `${sol.nombre} · ${sol.dispositivo ?? "teléfono"} quiere entrar como motorizado`,
+      title: sol.rol === "cocina" ? "🍳 Solicitud de pantalla de cocina" : "🛵 Solicitud de acceso",
+      body: `${sol.nombre} · ${sol.dispositivo ?? "teléfono"} quiere entrar como ${sol.rol === "cocina" ? "pantalla de cocina" : "motorizado"}`,
     };
   }
   const { data: p } = await db.from("pedidos").select("*").eq("id", f.pedido_id).maybeSingle();
