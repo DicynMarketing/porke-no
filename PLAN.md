@@ -21,3 +21,19 @@ Pasos 1 al 11: hechos en la versión 0.10.0 (falta lo de Supabase, ver supabase/
 | 15 | **Pasar todo a la dirección principal** | — | Solo cuando el dueño lo autorice. |
 
 Descartado: regalo de cumpleaños (se presta a fechas falsas y cuentas repetidas).
+
+
+# Plan B · Antes de abrir al público (versión 0.11.0)
+
+| # | Qué | Estado |
+|---|-----|--------|
+| 1 | Verificación en 2 pasos en las cuentas (Supabase, GitHub, Cloudflare, Google) | Lo hace el dueño con los pasos |
+| 2 | Cancelar pedido con motivo (el cliente lo recibe) | Hecho |
+| 3 | Cerrar el local un día completo (feriado) con mensaje | Hecho |
+| 4 | Entrada del equipo con 4 opciones: administrador, motorizado, pantalla de cocina y cajero; pantalla completa | Hecho |
+| 5 | Calificaciones en el admin | Hecho |
+| 6 | Propina para el repartidor ($1, $2, $3 o nada) | Hecho |
+| 7 | Estadísticas de uso (PostHog, plan gratis) | Listo; se enciende con la clave del proyecto |
+
+Sin activar (para más adelante): cupón por seguir el Instagram (hay que evitar cuentas repetidas).
+Inventario: se queda como está (apagar el producto cuando se acaba); hablarlo con la dueña.

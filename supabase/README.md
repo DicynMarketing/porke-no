@@ -1,7 +1,7 @@
 # Fase 1 · Conectar Porké No? a Supabase
 
 ## ✅ Lista de pendientes en Supabase (se actualiza en cada cambio)
-Última versión de la app: **0.10.0**. Haz solo lo que todavía no hayas hecho, en este orden:
+Última versión de la app: **0.11.0**. Haz solo lo que todavía no hayas hecho, en este orden:
 
 > Pendiente para más adelante: tarifas de delivery por zonas (hoy todo es $2.00, el mínimo; centro de Aguadulce y Pocrí = $2.00).
 
@@ -22,6 +22,11 @@
 | 13 | Respaldo diario (GitHub) | GitHub › Settings › Secrets and variables › Actions | ✔ Hecho: corre solo cada día; primera copia el 2026-10-28 |
 | 14 | Recibos por correo (Resend) | Edge Functions › Secrets | Opcional: `EMAIL_PROVIDER=resend`, `RESEND_API_KEY`, `EMAIL_FROM` y volver a subir `enviar-comprobante` |
 | 15 | Aviso de errores (Sentry) | — | Opcional: crear el proyecto en sentry.io y pasarme la DSN (es pública) |
+| 16 | SQL `10-antes-de-abrir.sql` | SQL Editor › Run | **Nuevo** (motivo de cancelación, cerrar el día, cajero, propina) |
+| 17 | Función `crear-pedido` | Edge Functions › crear-pedido › Code › Deploy | **Volver a subir** (propina y días cerrados · cambió en 0.11.0) — después del paso 16 |
+| 18 | Función `enviar-push` | Edge Functions › enviar-push › Code › Deploy | **Volver a subir** (motivo de cancelación · cambió en 0.11.0) |
+| 19 | Estadísticas de uso (PostHog) | — | Opcional: crear el proyecto en posthog.com y pasarme la clave pública (empieza con `phc_`) |
+| 20 | Cajero (cuando lo contrates) | Authentication › Users › Add user, y luego SQL: `select public.agregar_equipo('correo', 'aguadulce', 'cajero', 'Nombre');` | Más adelante |
 
 
 En esta rama `index.html` ya apunta al proyecto de Supabase de Porké No?. Si `SB_URL` y `SB_KEY` quedan vacías, la app funciona igual que el prototipo.

@@ -52,7 +52,8 @@ function ahora(zona: string, cuando = new Date()) {
       timeZone: zona, weekday: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
     }).formatToParts(cuando).map((x) => [x.type, x.value]),
   );
-  return { dia: DIAS.indexOf(p.weekday), minuto: Number(p.hour) * 60 + Number(p.minute) };
+  const fecha = new Intl.DateTimeFormat("en-CA", { timeZone: zona }).format(cuando); // AAAA-MM-DD
+  return { dia: DIAS.indexOf(p.weekday), minuto: Number(p.hour) * 60 + Number(p.minute), fecha };
 }
 
 const aMinutos = (t: string) => {
@@ -170,6 +171,12 @@ Deno.serve(async (req) => {
 
   // --- Horario de cada sección pedida ---
   const t = ahora(suc.zona_horaria, programado ?? new Date());
+  // Día cerrado por feriado (el admin lo marca en Horario).
+  if (((suc.cierres ?? []) as string[]).includes(t.fecha)) {
+    return fallo(409, programado
+      ? "Ese día estamos cerrados. Elige otro día para tu pedido."
+      : (suc.cierre_msg || "Hoy estamos cerrados. ¡Mañana reabrimos!"));
+  }
   const { data: hrs } = await db.from("horarios").select("seccion, activo, apertura, cierre")
     .eq("sucursal_id", suc.id).eq("dia_semana", t.dia);
   const horario = new Map((hrs ?? []).map((h) => [h.seccion, h]));
@@ -301,6 +308,9 @@ Deno.serve(async (req) => {
   // --- Totales (en centavos para no perder decimales) ---
   const envio = tipo === "delivery" ? centavos(suc.tarifa_entrega) : 0;
   const servicio = centavos(suc.cargo_servicio);
+  // Propina para el motorizado (solo delivery, opcional, hasta $20).
+  const propina = tipo === "delivery" ? centavos(Number(b.propina) || 0) : 0;
+  if (propina < 0 || propina > 2000) return fallo(400, "La propina debe ser entre $0 y $20.");
 
   // El cupón se aparta antes de guardar el pedido (si dos pedidos lo usan a la vez, solo uno lo logra).
   if (cupon) {
@@ -322,7 +332,8 @@ Deno.serve(async (req) => {
     subtotal: subtotal / 100,
     envio: envio / 100,
     servicio: servicio / 100,
-    total: (subtotal + envio + servicio) / 100,
+    propina: propina / 100,
+    total: (subtotal + envio + servicio + propina) / 100,
     metodo_pago: metodo,
     estado_pago: conComprobante ? "en_revision" : "por_cobrar",
     comprobante_path: comprobante,

@@ -108,7 +108,9 @@ async function armar(db: any, f: Fila): Promise<Aviso | null> {
       ? ["¡Tu pedido va en camino!", "El repartidor va hacia ti 🛵"]
       : ["¡Tu pedido está listo!", "Ya puedes pasar a recogerlo 🛍️"],
     entregado: ["¡Pedido entregado!", `¡Buen provecho! Gracias por pedir en ${local}`],
-    cancelado: ["Tu pedido fue cancelado", `Escríbele a ${local} por WhatsApp si tienes dudas.`],
+    cancelado: ["Tu pedido fue cancelado", p.motivo_cancelacion
+      ? `Motivo: ${p.motivo_cancelacion}. Si tienes dudas, escríbele a ${local} por WhatsApp.`
+      : `Escríbele a ${local} por WhatsApp si tienes dudas.`],
   };
   const t = textos[f.datos.estado];
   // Cada etapa con su propia etiqueta: así Android vuelve a mostrar la ventana emergente.
