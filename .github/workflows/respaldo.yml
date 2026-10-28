@@ -1,0 +1,65 @@
+# Porké No? · Respaldo diario de la base de datos (gratis, con GitHub Actions)
+#
+# Cada día a las 3:17 a.m. (hora de Panamá) copia la base de datos de Supabase,
+# la comprime y la CIFRA con una contraseña. Como el repositorio es público, el
+# archivo nunca queda legible: solo se abre con la contraseña RESPALDO_CLAVE.
+# Cada copia se guarda 30 días en Actions › Respaldo diario › (ejecución) › Artifacts.
+#
+# Secretos (Settings › Secrets and variables › Actions › New repository secret):
+#   SUPABASE_DB_URL  = cadena "Session pooler" de Supabase (botón Connect), con la contraseña de la base de datos
+#   RESPALDO_CLAVE   = una contraseña larga que solo conoce el dueño (sin ella no se puede abrir el respaldo)
+# Incluye: tablas, datos y cuentas. No incluye las fotos de comprobantes (Storage).
+
+name: Respaldo diario
+
+on:
+  schedule:
+    - cron: "17 8 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  respaldo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Revisar secretos
+        env:
+          DB: ${{ secrets.SUPABASE_DB_URL }}
+          CLAVE: ${{ secrets.RESPALDO_CLAVE }}
+        run: |
+          if [ -z "$DB" ] || [ -z "$CLAVE" ]; then
+            echo "::error::Faltan los secretos SUPABASE_DB_URL y RESPALDO_CLAVE (ver supabase/README.md)"; exit 1
+          fi
+
+      - name: Instalar pg_dump 17
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client-17 > /dev/null
+
+      - name: Copiar, comprimir y cifrar
+        env:
+          DB: ${{ secrets.SUPABASE_DB_URL }}
+          CLAVE: ${{ secrets.RESPALDO_CLAVE }}
+        run: |
+          set -euo pipefail
+          D=$(TZ=America/Panama date +%Y-%m-%d)
+          mkdir -p r
+          /usr/lib/postgresql/17/bin/pg_dump "$DB" --schema=public --no-owner --no-privileges > r/public.sql
+          /usr/lib/postgresql/17/bin/pg_dump "$DB" --schema=auth --data-only --no-owner --no-privileges --table=auth.users --table=auth.identities > r/cuentas.sql
+          tar -czf - -C r . | gpg --batch --yes --pinentry-mode loopback --passphrase "$CLAVE" --symmetric --cipher-algo AES256 -o "respaldo-$D.tar.gz.gpg"
+          rm -rf r
+          ls -la "respaldo-$D.tar.gz.gpg"
+          echo "ARCHIVO=respaldo-$D.tar.gz.gpg" >> "$GITHUB_ENV"
+
+      - name: Guardar el respaldo (30 días)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARCHIVO }}
+          path: ${{ env.ARCHIVO }}
+          retention-days: 30
+          if-no-files-found: error
