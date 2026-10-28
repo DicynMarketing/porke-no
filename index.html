@@ -64,7 +64,8 @@ input,textarea,select,[contenteditable]{-webkit-user-select:text;user-select:tex
 h2{font:400 28px 'Bebas Neue',Impact,sans-serif;color:#2ee59d;text-shadow:0 0 14px #1fa36f66;margin:16px 14px 4px}
 .hd{display:flex;align-items:center;gap:10px;padding:8px 14px;background:linear-gradient(180deg,#232323,#0c0c0c);border-bottom:3px solid var(--pink);box-shadow:0 4px 14px #f7a8d433}
 .hd img{width:54px;height:54px}
-.tips{display:flex;gap:10px;justify-content:center;margin:8px 0 2px}.tips button{width:58px;height:58px;border-radius:50%;border:2px solid #3fe0a066;background:#1b1b1b;color:var(--ink);font:600 15px Barlow,sans-serif}.tips button.on{background:#3fe0a0;color:#0c0c0c;border-color:#3fe0a0;box-shadow:0 0 14px #3fe0a088}
+.cchip{display:inline-block;vertical-align:middle;margin:7px 0 0;padding:4px 9px;border-radius:20px;background:#ff7a8a22;border:1px solid #ff7a8a88;color:#ffb3bd;font-size:11.5px;font-weight:600}
+.tips{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:6px 0 2px}.tips button{min-width:34px;height:34px;padding:0 8px;border-radius:17px;border:1px solid #3fe0a055;background:#1b1b1b;color:var(--ink);font:600 12.5px Barlow,sans-serif}.tips button.on{background:#3fe0a0;color:#0c0c0c;border-color:#3fe0a0}.tips input{width:74px;height:34px;padding:0 8px;border-radius:17px;font-size:14px!important}
 .cnr{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.cnr button{font:600 13.5px Barlow,sans-serif;border-radius:10px;border:1px solid #444;background:#1b1b1b;color:var(--ink);padding:8px 10px}.cnr button.on{background:#ff7a8a;color:#111;border-color:#ff7a8a}
 .cerr{margin:10px 14px 0;padding:14px;border-radius:14px;background:linear-gradient(135deg,#ff7a8a33,#ff7a8a11);border:1px solid #ff7a8a99;text-align:center}.cerr b{display:block;font:400 26px/1.1 'Bebas Neue',Impact,sans-serif;color:#ff9aa8}.cerr span{font-size:14px;color:#ffd6dc}
 body.app .frame.kdsw{max-width:none!important}.kds{min-height:100%;background:#0b0b0b}.kdh{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:10px;padding:10px 14px;background:#151515;border-bottom:3px solid var(--pink)}.kdh b{font:400 26px/1 'Bebas Neue',Impact,sans-serif;color:var(--pink)}.kdh small{color:var(--mute)}.kdh .sp{flex:1}.kdh button{font:600 14px Barlow,sans-serif;border-radius:10px;border:1px solid #444;background:#222;color:var(--ink);padding:8px 12px}
@@ -379,6 +380,7 @@ var EDIT=false,OUT={};
 function minPA(){try{var p=new Intl.DateTimeFormat('en-US',{timeZone:'America/Panama',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date()),g=function(t){return +p.filter(function(x){return x.type==t})[0].value};return g('hour')*60+g('minute')}catch(e){var n=new Date();return n.getHours()*60+n.getMinutes()}}
 function fechaPA(t){var p=paParts(t==null?Date.now():t);return p.year+'-'+p.month+'-'+p.day}
 function diaCerrado(t){return !!(SUC&&SUC.cierres&&SUC.cierres.length&&SUC.cierres.indexOf(fechaPA(t))>=0)}
+function cerrChip(){if(!CLOUD||!diaCerrado())return'';var m=(SUC.cierre_msg||'').replace(/^hoy estamos cerrados\.?\s*/i,'');return'<span class="cchip">🚫 Hoy cerrado'+(m&&m.length<=34?' · '+esc(m):' · Mañana reabrimos')+'</span>'}
 function cerrBan(){if(!CLOUD||!diaCerrado())return'';return'<div class="cerr"><b>🚫 Hoy estamos cerrados</b><span>'+esc(SUC.cierre_msg||'¡Mañana reabrimos! Puedes programar tu pedido.')+'</span></div>'}
 function isOpenC(k){if(CLOUD&&diaCerrado())return false;var m=minPA(),h=HRS[k],a=mm(h.a),b=mm(h.b);return h.on&&(a<=b?m>=a&&m<b:m>=a||m<b)}
 function isOpen(){return isOpenC('ff')}
@@ -395,9 +397,9 @@ function diaPA(){try{return['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].indexOf(n
 function enDia(id){if(isC(id))return promoHoy(cmb(id));var a=String(id).split('-'),m=MENU[+a[0]],p=m&&m.i[+a[1]];if(!p)return false;var d=p[5]&&p[5].length?p[5]:m.dias;if(!d||!d.length)return true;if(PROMOT&&Date.now()<PROMOT)return true;return d.indexOf(diaPA())>=0}
 function abierto(id){if(EXTRAS[id])return true;if(isC(id)){var c=cmb(id);return !!c&&promoHoy(c)&&(c.items||[]).length>0&&c.items.every(function(x){return abierto(x.codigo)})}var g=+String(id).split('-')[0];return !!MENU[g]&&(isOpenC(MENU[g].c||'ff')||!!MENU[g].both&&isOpenC('bk'))&&!OUT[id]&&enDia(id)}
 // Pedidos programados: horas de los próximos 2 días en que está abierto todo lo del carrito.
-var SCHED=null,TIP=0;
+var SCHED=null,TIP=0,TIPO=0;
 function tip(){return CLOUD&&typ=='d'?TIP:0}
-function tipBox(){if(!CLOUD||typ!='d')return'';return'<div class="sr" style="display:block"><span>💚 '+['Propina para el repartidor (opcional)','Tip for the rider (optional)','Gorjeta para o entregador (opcional)'][li]+'</span><div class="tips">'+[0,1,2,3].map(function(v){return'<button class="'+(TIP==v?'on':'')+'" data-a="tip" data-v="'+v+'">'+(v?'$'+v:['Nada','None','Nada'][li])+'</button>'}).join('')+'</div></div>'}
+function tipBox(){if(!CLOUD||typ!='d')return'';return'<div class="sr" style="display:block"><span>💚 '+['Propina para el repartidor (opcional)','Tip for the rider (optional)','Gorjeta para o entregador (opcional)'][li]+'</span><div class="tips">'+[0,1,2,3].map(function(v){return'<button class="'+(!TIPO&&TIP==v?'on':'')+'" data-a="tip" data-v="'+v+'">'+(v?'$'+v:'0')+'</button>'}).join('')+'<button class="'+(TIPO?'on':'')+'" data-a="tip" data-v="o">'+['Otro','Other','Outro'][li]+'</button>'+(TIPO?'<input type="number" id="tipx" inputmode="decimal" min="0" max="20" step="0.25" placeholder="$" value="'+(TIP||'')+'">':'')+'</div></div>'}
 function abreEn(k,dia,mi){var h=HRSW[dia]&&HRSW[dia][k];if(!h&&dia==diaPA())h=HRS[k];if(!h||!h.on)return false;var a=mm(h.a),b=mm(h.b);return a<=b?mi>=a&&mi<b:mi>=a||mi<b}
 function seccDe(id){if(EXTRAS[id])return['ff'];if(isC(id)){var c=cmb(id);return c?[secc(id)]:['ff']}var m=MENU[+String(id).split('-')[0]];return m?(m.both?['ff','bk']:[m.c||'ff']):['ff']}
 function pedible(id){if(abierto(id))return true;if(!CLOUD||isC(id)||EXTRAS[id])return false;var g=+String(id).split('-')[0];if(!MENU[g]||OUT[id]||!enDia(id))return false;return schSlots([{id:id}]).length>0}
@@ -412,7 +414,7 @@ function schBox(){if(!CLOUD)return'';var its=items(),cer=its.some(function(x){re
  if(cer)h+='<p class="note">'+['Ahora está cerrado lo que elegiste: programa la hora en que lo quieres.','Some items are closed now: choose a time.','Alguns itens estão fechados agora: escolha um horário.'][li]+'</p>';
  if(SCHED)h+=sl.length?'<select id="schs">'+sl.map(function(x){var v=new Date(x.t).toISOString();return'<option value="'+v+'"'+(v==SCHED?' selected':'')+'>'+(x.dd==0?'Hoy':'Mañana')+' · '+hm12(x.mi)+'</option>'}).join('')+'</select>':'<p class="note">No hay horas disponibles en los próximos 2 días.</p>';
  return h+'</div>'}
-function tabsHtml(){return ['bk','ff'].map(function(k){var o=isOpenC(k),h=HRS[k];return'<button class="tb'+(tab==k?' sel':'')+(o?'':' off')+'" data-a="tab" data-k="'+k+'"><span class="te">'+(k=='bk'?'🍳':'🍔')+'</span><b>'+t(k=='bk'?'brk':'ff')+'</b><small>'+f12(h.a)+' – '+f12(h.b)+'</small><em>'+(o?'<i class="dot on"></i>'+t('open'):(h.on?t('opens',f12(h.a)):t('closed')))+'</em></button>'}).join('')}
+function tabsHtml(){return ['bk','ff'].map(function(k){var o=isOpenC(k),h=HRS[k];return'<button class="tb'+(tab==k?' sel':'')+(o?'':' off')+'" data-a="tab" data-k="'+k+'"><span class="te">'+(k=='bk'?'🍳':'🍔')+'</span><b>'+t(k=='bk'?'brk':'ff')+'</b><small>'+f12(h.a)+' – '+f12(h.b)+'</small><em>'+(o?'<i class="dot on"></i>'+t('open'):CLOUD&&diaCerrado()?['Cerrado hoy','Closed today','Fechado hoje'][li]:(h.on?t('opens',f12(h.a)):t('closed')))+'</em></button>'}).join('')}
 function dstr(d){return d.toLocaleDateString(['es','en','pt'][li],{day:'numeric',month:'short'})+' · '+d.toLocaleTimeString(['es','en','pt'][li],{hour:'2-digit',minute:'2-digit'})}
 (function(){var k='';for(var n=0;n<5;n++){var s=n*9;k+='@keyframes d'+n+'{0%,'+s+'%{opacity:0;transform:translateY(-24px)}'+(s+9)+'%,86%{opacity:1;transform:none}96%,100%{opacity:0}}'}var e=document.createElement('style');e.textContent=k;document.head.appendChild(e)})();
 var BUR='<svg viewBox="0 0 64 64"><g class="L" style="animation-name:d0"><path d="M12 50h40q0 8-8 8H20q-8 0-8-8z" fill="url(#gbun)"/></g><g class="L" style="animation-name:d1"><rect x="10" y="42" width="44" height="8" rx="4" fill="url(#gpat)"/></g><g class="L" style="animation-name:d2"><path d="M9 40h46l-5 6-6-4-6 5-6-5-6 5-6-5-5 4z" fill="url(#gche)"/></g><g class="L" style="animation-name:d3"><path d="M9 36q4 5 8 0t8 0 8 0 8 0 8 0 5 2v2H9z" fill="#3fc060"/></g><g class="L" style="animation-name:d4"><path d="M12 36Q12 12 32 12Q52 12 52 36z" fill="url(#gbun)"/><ellipse cx="26" cy="20" rx="8" ry="3" fill="#fff" opacity=".35"/><g fill="#fff0c4"><ellipse cx="30" cy="22" rx="1.6" ry=".8"/><ellipse cx="38" cy="19" rx="1.6" ry=".8"/><ellipse cx="42" cy="26" rx="1.6" ry=".8"/></g></g></svg>';
@@ -446,7 +448,7 @@ function anim(o,s){return s==1?pgi(1):s==2?(o.type=='d'?pgi(2):'<div class="em">
 function repBtn(){if(!user||items().length)return'';var lo=orders.filter(function(o){return o.s==3&&o.items&&o.items.length}).sort(function(a,b){return b.time-a.time})[0];if(!lo)return'';
  return'<button class="rep" data-a="again" data-id="'+lo.id+'"><i>🔁</i><span><b>'+['Repetir mi último pedido','Repeat my last order','Repetir meu último pedido'][li]+'</b><small>'+esc(lo.items.filter(function(x){return !x.cp}).map(function(x){return x.q+'× '+find(x.id)[0]}).join(', '))+'</small></span></button>'}
 function home(){
- var h='<div class="hd">'+fidBtn()+'<div><b>Porké No?</b><small>'+t('tag')+'</small></div>'+(user?'':'<button class="gbtn" data-a="login">'+t('google')+'</button>')+'<button class="gear" data-a="set" aria-label="'+t('set')+'">⚙</button></div>'+lchipHtml()+'<div class="tabs" id="hrs">'+tabsHtml()+'</div>'+cerrBan()+espBan()+repBtn()+'<div id="trk"></div>';
+ var h='<div class="hd">'+fidBtn()+'<div><b>Porké No?</b><small>'+t('tag')+'</small></div>'+(user?'':'<button class="gbtn" data-a="login">'+t('google')+'</button>')+'<button class="gear" data-a="set" aria-label="'+t('set')+'">⚙</button></div>'+lchipHtml()+cerrChip()+'<div class="tabs" id="hrs">'+tabsHtml()+'</div>'+espBan()+'<div id="trk"></div>';
  h+='<div class="bw"><div class="ban" id="ban">'+BAN.map(function(b,i){return'<div class="sl" style="background-image:url('+PH[b[2]]+');--ov:'+b[3]+'"><b>'+t('b'+(i+1))+'</b><span>'+t('b'+(i+1)+'s')+'</span></div>'}).join('')+'</div></div>';
  h+='<div class="mn'+(isOpenC(tab)?'':' dim')+'">'+(isOpenC(tab)?'':'<div class="nav">'+t('na')+(HRS[tab].on&&!(CLOUD&&diaCerrado())?' · '+t('opens',f12(HRS[tab].a)):'')+'</div>');if(tab=='bk')h+=cafeBan();h+=promoHtml();MENU.map(function(m,g){return g}).sort(function(a,b){return (MENU[a].both?1:0)-(MENU[b].both?1:0)||a-b}).forEach(function(g){var m=MENU[g];if((m.c!=tab&&!m.both)||m.hid)return;if(m.i.every(function(p,i){return p.x||OUT[g+'-'+i]||!enDia(g+'-'+i)||ofertaHoy(p)||enCmb(g,i)}))return;h+='<h2>'+t('g'+g)+'</h2>'+(m.t?'<span class="tag">'+t(m.tt||'gt')+'</span>':'')+(m.c=='bk'?'<span class="tag">'+t('cafe')+'</span>':'');
   m.i.forEach(function(p,i){if(p.x||OUT[g+'-'+i]||!enDia(g+'-'+i)||ofertaHoy(p)||enCmb(g,i))return;h+='<div class="card"><div class="ph">'+img(p)+'</div><div class="inf"><b>'+p[0]+'</b><small>'+dsc(p)+'</small><div class="act"><em>$'+fmt(prc(p))+(prc(p)<p[1]?' <s>$'+fmt(p[1])+'</s>':'')+'</em>'+(p[3]?'<button class="b2" data-a="add" data-id="'+g+'-'+i+'" data-d="1">'+t('dbl')+'</button>':'')+'<button class="b1" data-a="add" data-id="'+g+'-'+i+'">'+t('add')+'</button></div></div></div>'})});
@@ -662,7 +664,7 @@ function done(o){tr=false;
  var h='<div class="an big">'+bag()+'</div><h3 class="ct big3">'+t('deliv')+'</h3><p class="note ct">'+t('rate_me')+'</p><div class="stars">';
  for(var i=1;i<=5;i++)h+='<button data-a="star" data-n="'+i+'" class="'+(i<=rt?'on':'')+'" aria-label="'+i+'">★</button>';
  h+='</div><div class="tags">'+[0,1,2,3].map(function(i){return'<span class="tg'+(tgs.indexOf(i)>=0?' on':'')+'" data-a="tag" data-t="'+i+'">'+t('tg'+i)+'</span>'}).join('')+'</div><div class="err ct" id="er"></div><button class="cta" data-a="rate">'+t('rsend')+'</button><button class="cta wa" data-a="close">'+t('later')+'</button>';open(h)}
-function sentOk(o){cart={};SCHED=null;TIP=0;setTimeout(function(){o.ps=='rev'?nCustom('🔍',A('y_rev_t'),A('y_rev_b')):pushN(o)},700);fm.nt='';paint();badge();strip();
+function sentOk(o){cart={};SCHED=null;TIP=0;TIPO=0;setTimeout(function(){o.ps=='rev'?nCustom('🔍',A('y_rev_t'),A('y_rev_b')):pushN(o)},700);fm.nt='';paint();badge();strip();
  open('<h3>'+t('sent')+'</h3><p class="note">$'+fmt(o.t)+' · '+payl(o.pay)+'. '+(o.ps=='rev'?A('y_sent'):t('sentn'))+'</p>'+(o.email?'<p class="note">'+A('c_sent')+' <b>'+esc(o.email)+'</b></p>':'')+'<div class="eta">⏱ '+t('eta')+': '+etaTxt()+'</div>'+'<a class="cta wa" target="_blank" rel="noopener" href="'+wam(o)+'">'+t('wa')+'</a><button class="cta" data-a="track">'+t('follow')+'</button>');}
 document.addEventListener('click',function(e){
  var mp=e.target.closest('#mp');if(mp){var r=mp.getBoundingClientRect(),px=Math.round((e.clientX-r.left)/r.width*340),py=Math.round((e.clientY-r.top)/r.height*240);if(edOn){edcap();ed.loc={x:px,y:py,gps:ed.loc&&ed.loc.gps||null};edSheet(ed.loc.gps?A('l_det'):'');return}loc={x:px,y:py,gps:loc&&loc.gps||null};mapSheet();return}
@@ -671,7 +673,7 @@ document.addEventListener('click',function(e){
  if(a=='iosok'){shut();entry();return}
  if((a=='add'||a=='sug')&&!pedible(b.dataset.id)){toast(enDia(b.dataset.id)?t('na'):A('a_noprm'));return}
  if((a=='add'||a=='sug')&&!abierto(b.dataset.id)&&!window._schTip){window._schTip=1;toast('⏰ Ahora está cerrado: puedes programar tu pedido para más tarde')}
- if(a=='tip'){TIP=+b.dataset.v;payScreen();return}
+ if(a=='tip'){if(b.dataset.v=='o'){TIPO=1;payScreen();setTimeout(function(){var x=$('tipx');if(x)x.focus()},50)}else{TIPO=0;TIP=+b.dataset.v;payScreen()}return}
  if(a=='sch'){SCHED=b.dataset.m=='later'?(function(){var sl=schSlots(items());return sl.length?new Date(sl[0].t).toISOString():null})():null;cap();cartSheet();return}
  if(a=='add'&&isC(b.dataset.id)){var cc=cmb(b.dataset.id);if(cc&&cc.items.some(function(x){return x.codigo=='2-0'})){flSheet((b.dataset.d?'cmbd:':'cmb:')+b.dataset.id);return}}
  if(a=='add'){if(b.dataset.id=='2-0'){flSheet('menu');return}var k=b.dataset.id+(b.dataset.d?'d':'');cart[k]=cart[k]||{id:b.dataset.id,d:!!b.dataset.d,q:0};cart[k].q++;paint();pickFx(b);fly(b);ev('agregar_producto',{producto:find(b.dataset.id)[0]});return}
@@ -831,6 +833,7 @@ document.addEventListener('click',function(e){
 });
 document.addEventListener('change',function(e){var x=e.target;
  if(x.id=='schs'){SCHED=x.value||null;return}
+ if(x.id=='tipx'){TIP=Math.max(0,Math.min(20,Math.round((parseFloat(x.value)||0)*100)/100));payScreen();return}
  if(x.id=='cd'){cd=x.value;drv();return}
  if(x.id=='dp'){selDay=x.value||today();admin();return}
  if(x.dataset.o){var ox=ord(x.dataset.o);ox.drv=x.value||null;cloudDo('equipo_asignar_motorizado',ox,{p_motorizado:ox.drv?DRVID[ox.drv]||null:null});return}
@@ -941,7 +944,7 @@ function drv(){var mine=orders.filter(function(o){return o.drv==cd&&o.s==2}),dn=
  if(CLOUD&&APPMODE&&mine.length)h+='<p class="note" style="padding:0 14px">📡 Compartiendo tu ubicación con el cliente mientras entregas.</p>';
  if(CLOUD&&APPMODE)h+='<div style="padding:12px"><button class="b2" data-a="staffout" style="width:100%;padding:10px">Cerrar sesión</button></div>';
  scr.innerHTML=h;if(CLOUD&&APPMODE&&EQ&&EQ.rol=='motorizado')rdShare(mine.length>0)}
-var APPV='0.11.0',UPDSKIP='';
+var APPV='0.11.1',UPDSKIP='';
 // Pedidos en espera (el admin lo activa cuando hay muchos pedidos).
 function ev(n,x){try{if(window.posthog&&posthog.capture)posthog.capture(n,x||{})}catch(e){}}
 function enEspera(){return !!(SUC&&SUC.espera_hasta&&Date.parse(SUC.espera_hasta)>Date.now())}
