@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<script>(function(){try{var ios=/iPhone|iPod/.test(navigator.userAgent),st=navigator.standalone||matchMedia('(display-mode: standalone)').matches;if(!ios||!st)return;
+ addEventListener('DOMContentLoaded',function(){var d=document.createElement('div');d.style.cssText='position:fixed;bottom:0;height:0;padding-bottom:env(safe-area-inset-bottom,0px)';document.body.appendChild(d);var v=parseFloat(getComputedStyle(d).paddingBottom)||0;d.remove();
+  if(!v&&Math.max(screen.width,screen.height)>=812)document.documentElement.style.setProperty('--sab','26px')})}catch(e){}})();</script>
 <script>/* Mantener presionado no abre menús de Chrome (descargar/copiar/compartir imagen, abrir enlace); solo se permite en campos para escribir. */
 document.addEventListener('contextmenu',function(e){var t=e.target;if(!(t&&t.closest&&t.closest('input,textarea,select,[contenteditable]')))e.preventDefault()},true);
 document.addEventListener('dragstart',function(e){e.preventDefault()},true);</script>
@@ -18,7 +21,7 @@ document.addEventListener('dragstart',function(e){e.preventDefault()},true);</sc
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Porké No?" id="pkatt">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0e0e0e">
 <style>
 #pkupd{position:fixed;inset:0;z-index:2147483647;background:#F0EEEF;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;opacity:0;transition:opacity .15s ease;padding:env(safe-area-inset-top,0) 16px env(safe-area-inset-bottom,0);-webkit-user-select:none;user-select:none}
@@ -37,7 +40,7 @@ html.pk-boot #pkupd{opacity:1}html.pk-boot #pkupd .pkb i{width:100%;transition:n
 <title>Porké No? · App v0.8 (prototipo)</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0c0c0c;--ink:#f4f4f4;--mute:#a3a3a3;--pink:#f7a8d4;--green:#1fa36f;--line:#2e2e2e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root{--bg:#0c0c0c;--ink:#f4f4f4;--mute:#a3a3a3;--pink:#f7a8d4;--green:#1fa36f;--line:#2e2e2e;--sab:env(safe-area-inset-bottom,0px);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);background:#232323}
 *{box-sizing:border-box}
 html,body{overscroll-behavior:none;margin:0;height:100%;position:fixed;inset:0;width:100%;overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;background:#050505;color:var(--ink);font-family:Barlow,system-ui,sans-serif}
 body{display:flex;flex-direction:column}
@@ -52,6 +55,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .frame{width:100%;max-width:390px;height:100%;max-height:800px;background:var(--bg);border:6px solid #2b2b2b;border-radius:22px;position:relative;overflow:hidden}
 .frame.adm{max-width:680px;border-radius:14px}
 img,svg,video,a{-webkit-user-drag:none;user-drag:none;-webkit-touch-callout:none}
+body{top:env(safe-area-inset-top,0px);height:auto}
 .scr{height:100%;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 input,textarea,select,[contenteditable]{-webkit-user-select:text;user-select:text}
 h2{font:400 28px 'Bebas Neue',Impact,sans-serif;color:#2ee59d;text-shadow:0 0 14px #1fa36f66;margin:16px 14px 4px}
@@ -86,13 +90,13 @@ h2{font:400 28px 'Bebas Neue',Impact,sans-serif;color:#2ee59d;text-shadow:0 0 14
 .act em{font-style:normal;font-weight:700;color:var(--pink);margin-right:auto;text-shadow:0 0 10px #f7a8d466}
 .b1{background:linear-gradient(180deg,#ffc6e4,#f7a8d4 48%,#e98ac0);color:#111;border:0;border-radius:9px;padding:7px 13px;font:600 13px Barlow,sans-serif;cursor:pointer;box-shadow:inset 0 1px 0 #fffb,0 3px 8px #f7a8d44d}
 .b2{background:linear-gradient(180deg,#2a2a2a,#171717);color:var(--pink);border:1px solid var(--pink);border-radius:9px;padding:6px 10px;font:600 13px Barlow,sans-serif;cursor:pointer;box-shadow:inset 0 1px 0 #ffffff22}
-.bar{position:sticky;bottom:0;margin-top:14px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(180deg,#3fe0a0,#1fa36f 55%,#168a5c);padding:10px 14px;cursor:pointer;box-shadow:inset 0 1px 0 #fff8,0 -6px 16px #0008}
+.bar{position:sticky;bottom:0;margin-top:14px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(180deg,#3fe0a0,#1fa36f 55%,#168a5c);padding:10px 18px calc(10px + var(--sab));cursor:pointer;box-shadow:inset 0 1px 0 #fff8,0 -6px 16px #0008}
 .bar .tot{font:400 28px/1 'Bebas Neue',Impact,sans-serif}.bar small{display:block;font-size:13px}
 .bar .go{background:linear-gradient(180deg,#fff,#dfeee8);color:#0a6b46;border-radius:9px;padding:9px 14px;font-weight:700}
 .bump{animation:bump .35s}@keyframes bump{40%{transform:scale(1.15)}}
 .trk{margin:12px 14px 0;padding:10px 12px;border-radius:12px;background:linear-gradient(135deg,#f7a8d4,#d86aa8);color:#111;font-weight:600;cursor:pointer;display:flex;justify-content:space-between;align-items:center;box-shadow:inset 0 1px 0 #fff9,0 4px 12px #f7a8d444}
 #shade{position:absolute;inset:0;background:#000b;opacity:0;pointer-events:none;transition:opacity .2s;z-index:4}#shade.open{opacity:1;pointer-events:auto}
-#sheet{position:absolute;left:0;right:0;bottom:0;max-height:92%;overflow:auto;background:linear-gradient(180deg,#1d1d1d,#121212);border-radius:18px 18px 0 0;padding:16px;transform:translateY(105%);transition:transform .25s;z-index:5;box-shadow:inset 0 1px 0 #ffffff22}#sheet.open{transform:none}
+#sheet{position:absolute;left:0;right:0;bottom:0;max-height:92%;overflow:auto;background:linear-gradient(180deg,#1d1d1d,#121212);border-radius:18px 18px 0 0;padding:16px 16px calc(16px + var(--sab));transform:translateY(105%);transition:transform .25s;z-index:5;box-shadow:inset 0 1px 0 #ffffff22}#sheet.open{transform:none}
 #sheet h3{font:400 28px 'Bebas Neue',Impact,sans-serif;margin:0 0 8px;color:var(--pink)}
 label{display:block;font-size:13px;color:var(--mute);margin:10px 0 4px}
 input[type=text],input[type=tel],input[type=email],textarea{width:100%;background:#0c0c0c;color:var(--ink);border:1px solid #3a3a3a;border-radius:9px;padding:10px;font:15px Barlow,sans-serif}
@@ -240,7 +244,7 @@ body.app .top{display:none}
 .opt.big{display:flex;flex-direction:column;gap:2px;text-align:center;padding:12px 6px}.opt.big small{font-size:12px;color:#9a9a9a}.opt.big.on small{color:#8dffc9}
 .pay{display:flex;align-items:center;gap:12px;padding:12px;margin:7px 0;border-radius:12px;border:1px solid #3a3a3a;background:#171717;cursor:pointer}.pay i{font-style:normal;font-size:22px}.pay b{flex:1;font-size:15px}.pay em{width:20px;height:20px;border-radius:50%;border:2px solid #666}.pay.on{border-color:#c58bff;background:linear-gradient(135deg,#c58bff26,#171717)}.pay.on em{border-color:#c58bff;background:radial-gradient(circle,#c58bff 45%,transparent 50%)}
 .sum{margin:12px 0;padding:14px;border-radius:16px;background:linear-gradient(160deg,#1c3a2e,#101010);border:1px solid #3fe0a0;box-shadow:0 0 18px #3fe0a033}.sum .ch2{color:#3fe0a0}.sr{display:flex;justify-content:space-between;padding:6px 0;font-size:15px;color:#ddd}.st{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:10px;border-top:2px dashed #3fe0a066}.st span{font:600 16px Barlow,sans-serif}.st b{font:400 44px/1 'Bebas Neue',Impact,sans-serif;color:#7dffc8;text-shadow:0 2px 0 #0008}
-.sbar2{position:sticky;bottom:-16px;margin:0 -16px -16px;padding:10px 16px 16px;background:linear-gradient(180deg,transparent,#121212 35%)}.sbar2 .cta{margin-top:0;font-size:17px;padding:15px}</style><style id="paycss">.cnw{position:relative}.cnw input{padding-right:64px;letter-spacing:.06em}.cnw em{position:absolute;right:12px;top:50%;transform:translateY(-50%);font:700 12px Barlow,sans-serif;font-style:normal;color:#7dffc8}.cbox{margin:9px 0;padding:10px 12px}#sheet h3{margin:4px 0 6px}.opt.big{padding:10px 6px}.g2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}.g2 input{width:100%;min-width:0;box-sizing:border-box}.g2 label{margin-top:4px}.g2 select{width:100%;height:46px;background:#0c0c0c;color:#f4f4f4;border:1px solid #3a3a3a;border-radius:10px;padding:0 8px;font:15px Barlow,sans-serif}
+.sbar2{position:sticky;bottom:calc(-16px - var(--sab));margin:0 -16px calc(-16px - var(--sab));padding:10px 16px calc(16px + var(--sab));background:linear-gradient(180deg,transparent,#121212 35%)}.sbar2 .cta{margin-top:0;font-size:17px;padding:15px}</style><style id="paycss">.cnw{position:relative}.cnw input{padding-right:64px;letter-spacing:.06em}.cnw em{position:absolute;right:12px;top:50%;transform:translateY(-50%);font:700 12px Barlow,sans-serif;font-style:normal;color:#7dffc8}.cbox{margin:9px 0;padding:10px 12px}#sheet h3{margin:4px 0 6px}.opt.big{padding:10px 6px}.g2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}.g2 input{width:100%;min-width:0;box-sizing:border-box}.g2 label{margin-top:4px}.g2 select{width:100%;height:46px;background:#0c0c0c;color:#f4f4f4;border:1px solid #3a3a3a;border-radius:10px;padding:0 8px;font:15px Barlow,sans-serif}
 .minil{display:flex;gap:10px;align-items:center}.minimap{flex:0 0 42%;border-radius:10px;overflow:hidden;border:1px solid #3a3a3a}.minimap .map{margin:0;border:0;height:84px;object-fit:cover}.mt{flex:1;min-width:0}.mt b{display:block;font-size:15px}.mt small{display:block;color:#bbb;font-size:13px;margin-top:2px}
 .sbar2.tot{display:flex;align-items:center;gap:12px}.tb{flex:0 0 auto;display:flex;flex-direction:column}.tb span{font-size:12px;color:#aaa}.tb span small{display:block;font-size:11px;color:#8a8a8a}.tb b{font:400 38px/1 'Bebas Neue',Impact,sans-serif;color:#7dffc8}.sbar2.tot .cta{flex:1}
 .pm{margin-top:8px}.pcar{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:6px 11% 10px;margin:0 -16px;scrollbar-width:none}.pcar::-webkit-scrollbar{display:none}
@@ -803,7 +807,7 @@ function drv(){var mine=orders.filter(function(o){return o.drv==cd&&o.s==2}),dn=
  mine.forEach(function(o){h+='<div class="ord"><h4>Entrega</h4><p><b>'+esc(o.name)+'</b></p>'+mapSvg(o.loc)+''+drvPay(o)+'<p>📍 '+esc(o.ref)+'</p>'+(o.loc.gps?'<a class="b2 lk" target="_blank" rel="noopener" href="https://maps.google.com/?q='+o.loc.gps+'">Abrir en Google Maps</a>':'')+'<button class="cta" data-a="deliv" data-id="'+o.id+'">Marcar entregado</button></div>'});
  if(CLOUD&&APPMODE)h+='<div style="padding:12px"><button class="b2" data-a="staffout" style="width:100%;padding:10px">Cerrar sesión</button></div>';
  scr.innerHTML=h}
-var APPV='0.9.28',UPDSKIP='';
+var APPV='0.9.29',UPDSKIP='';
 function vnew(a,b){a=String(a).split('.');b=String(b).split('.');for(var i=0;i<4;i++){var x=+a[i]||0,y=+b[i]||0;if(x!=y)return x>y}return false}
 function showUpd(d,demo){var e=$('upd');e.innerHTML='<b>🐷 Nueva versión '+esc(d.v)+' disponible</b><ul>'+(d.notes||[]).map(function(n){return'<li>'+esc(n)+'</li>'}).join('')+'</ul><div class="ub"><button class="no" data-a="updno">Después</button><button class="go" data-a="updgo"'+(demo?' data-demo="1"':'')+'>Actualizar ahora</button></div>';e.hidden=false;e.dataset.v=d.v}
 // Pantalla de actualización con el cerdito: cubre todo, la barra solo avanza, una sola recarga.
