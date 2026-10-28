@@ -548,7 +548,7 @@ function ico(i,k,sub){return'<button class="mi" data-a="sub" data-k="'+k+'"><i>'
 function settings(){var h='<h3>'+A('a_t')+'</h3>'+(user?'<p class="note"><b>'+esc(user.name)+'</b> · '+esc(user.email)+'</p>':'<p class="note">'+A('a_nl')+'</p><button class="cta wa" data-a="login">'+t('google')+'</button>');
  h+=ico('👤','p')+ico('🔐','s')+ico('🎟️','c')+ico('🧾','o')+ico('🔔','nt')+ico('🌐','l');
  h+='<div class="sec">Porké No?</div>'+ico('🍔','mn')+ico('🐷','q')+ico('📄','tc')+ico('💳','pg')+ico('🛡️','pr');
- h+=(DEMO||ROLE!='client'?'<button class="mi" data-a="'+(ROLE=='client'?'staff':'hndm')+'" style="opacity:.75"><i>🔒</i><span>'+(ROLE=='client'?'Acceso del personal':'Cambiar de vista (personal)')+'</span><s>›</s></button>':'')+'<div class="sec">'+A('a_in')+'</div><p class="note">'+A('a_ad')+'<br>'+A('a_ios')+'<br>'+A('a_v')+' '+APPV+(CLOUD?'':' (prototipo)')+'</p><div class="ft">'+A('a_r')+'<br>'+A('a_h')+' <b>DiCyn Marketing</b></div>';
+ h+=(DEMO||ROLE!='client'?'<button class="mi" data-a="'+(ROLE=='client'?'staff':'hndm')+'" style="opacity:.75"><i>🔒</i><span>'+(ROLE=='client'?'Acceso del personal':'Cambiar de vista (personal)')+'</span><s>›</s></button>':'')+'<div class="sec">'+A('a_in')+'</div><p class="note">'+A('a_ad')+'<br>'+A('a_ios')+'<br>'+A('a_v')+' '+APPV+(CLOUD?'':' (prototipo)')+'</p><button class="cta" data-a="updchk">🔄 '+['Buscar actualización','Check for updates','Procurar atualização'][li]+'</button><div class="ft">'+A('a_r')+'<br>'+A('a_h')+' <b>DiCyn Marketing</b></div>';
  open(h+'<button class="cta" data-a="close">'+t('close')+'</button>')}
 function back(){return'<button class="bk" data-a="set">'+A('a_b')+'</button>'}
 function sub(k){var h=back()+'<h3>'+A('a_'+k)+'</h3>';
@@ -683,6 +683,7 @@ document.addEventListener('click',function(e){
   var em=(user?user.email:(fm.em||'')).trim();var pm=paySel.indexOf('card:')==0?'cdc':paySel,cd0=paySel.indexOf('card:')==0?cards[+paySel.slice(5)]:null;
   var its=items(),dk=today(),o={note:(fm.nt||'').trim(),cafe:hasBk(its),id:++uid,day:dk,num:orders.filter(function(x){return x.day==dk}).length+1,time:new Date(),type:typ,name:fm.nm.trim(),phone:fm.ph.trim(),ref:fm.ad.trim(),loc:typ=='d'?loc:null,pay:pm,ps:pm=='cash'?'cod':'rev',proof:proofData,card:null,items:its,sub:itot(its)-dsct(),fee:fee(),svc:svc(),email:em,t:itot(its)-dsct()+fee()+svc(),cup:cupLn(its)?CUP.id:null,s:0,drv:null,rate:0,tags:[]};if(CLOUD){cloudSend(o,b);return}phReg(o.phone,o.name);proofData=null;clearInterval(pTm);orders.unshift(o);sentOk(o);return}
  if(a=='fid'){fidOpen();return}
+ if(a=='updchk'){b.disabled=true;fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){b.disabled=false;if(d&&d.v&&vnew(d.v,APPV)){shut();showUpd(d)}else toast('✅ '+['Ya tienes la última versión','You have the latest version','Você já tem a última versão'][li]+' ('+APPV+')')}).catch(function(){b.disabled=false;toast('Sin conexión. Intenta de nuevo.')});return}
  if(a=='cupt'){CUPON=!CUPON;payScreen();return}
  if(a=='atab'){admTab=b.dataset.t;admin();return}
 
@@ -802,7 +803,7 @@ function drv(){var mine=orders.filter(function(o){return o.drv==cd&&o.s==2}),dn=
  mine.forEach(function(o){h+='<div class="ord"><h4>Entrega</h4><p><b>'+esc(o.name)+'</b></p>'+mapSvg(o.loc)+''+drvPay(o)+'<p>📍 '+esc(o.ref)+'</p>'+(o.loc.gps?'<a class="b2 lk" target="_blank" rel="noopener" href="https://maps.google.com/?q='+o.loc.gps+'">Abrir en Google Maps</a>':'')+'<button class="cta" data-a="deliv" data-id="'+o.id+'">Marcar entregado</button></div>'});
  if(CLOUD&&APPMODE)h+='<div style="padding:12px"><button class="b2" data-a="staffout" style="width:100%;padding:10px">Cerrar sesión</button></div>';
  scr.innerHTML=h}
-var APPV='0.9.27',UPDSKIP='';
+var APPV='0.9.28',UPDSKIP='';
 function vnew(a,b){a=String(a).split('.');b=String(b).split('.');for(var i=0;i<4;i++){var x=+a[i]||0,y=+b[i]||0;if(x!=y)return x>y}return false}
 function showUpd(d,demo){var e=$('upd');e.innerHTML='<b>🐷 Nueva versión '+esc(d.v)+' disponible</b><ul>'+(d.notes||[]).map(function(n){return'<li>'+esc(n)+'</li>'}).join('')+'</ul><div class="ub"><button class="no" data-a="updno">Después</button><button class="go" data-a="updgo"'+(demo?' data-demo="1"':'')+'>Actualizar ahora</button></div>';e.hidden=false;e.dataset.v=d.v}
 // Pantalla de actualización con el cerdito: cubre todo, la barra solo avanza, una sola recarga.
@@ -818,17 +819,19 @@ window.updDone=updDone;
 function applyUpd(test){if(window.UPDGO)return;window.UPDGO=true;UPD.test=!!test;UPD.done=0;
  updShow(function(){UPD.t0=Date.now();clearInterval(UPD.tick);UPD.tick=setInterval(function(){updBar(UPD.p+Math.max(.4,(90-UPD.p)*.07))},200);clearTimeout(UPD.fail);UPD.fail=setTimeout(updFail,15000);
   if(test){setTimeout(updDone,3600);return}
-  var r=window.SWREG,fin=function(w){try{w.postMessage('skip')}catch(e){updFail()}};if(!r){updDone();return}
+  var r=window.SWREG,fin=function(w){try{w.postMessage('skip')}catch(e){updFail()}};if(!r){updClean().then(updDone);return}
   var esperar=function(w){if(w.state=='installed')return fin(w);w.addEventListener('statechange',function(){if(w.state=='installed')fin(w);else if(w.state=='redundant')updFail()})};
-  try{if(r.waiting)fin(r.waiting);else if(r.installing)esperar(r.installing);else r.update().then(function(){if(r.waiting)fin(r.waiting);else if(r.installing)esperar(r.installing);else updDone()}).catch(updFail)}catch(e){updFail()}})}
+  try{if(r.waiting)fin(r.waiting);else if(r.installing)esperar(r.installing);else r.update().then(function(){if(r.waiting)fin(r.waiting);else if(r.installing)esperar(r.installing);else updClean().then(updDone)}).catch(function(){updClean().then(updDone)})}catch(e){updClean().then(updDone)}})}
+// Borra la copia guardada de la app (no las animaciones) para que la próxima apertura venga directo del servidor.
+function updClean(){var sw=navigator.serviceWorker?navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.unregister()}))}):Promise.resolve();
+ return sw.then(function(){return window.caches?caches.keys().then(function(k){return Promise.all(k.filter(function(x){return !/media/.test(x)}).map(function(x){return caches.delete(x)}))}):0}).catch(function(){})}
 // Al abrir la versión nueva: la pantalla sigue hasta que la app está lista y luego se desvanece.
 function updBoot(){var h=document.documentElement;if(!h.classList.contains('pk-boot'))return;try{sessionStorage.removeItem('pk_upd')}catch(e){}updVideo();var sp=$('splash');if(sp)sp.classList.add('out');
  requestAnimationFrame(function(){requestAnimationFrame(function(){setTimeout(function(){var o=$('pkupd');o.style.transition='opacity .25s ease';o.style.opacity=0;setTimeout(function(){h.classList.remove('pk-upd','pk-boot');o.style.opacity='';entry()},260)},350)})})}
 setTimeout(function(){try{new Image().src='assets/carga/cerdito-poster.png'}catch(e){}},3000);
 // Si se actualizó y aun así quedó una versión vieja (teléfono que se saltó varias), se limpia todo una vez y se abre la última.
 function updStuck(v){var to='',hd='';try{to=sessionStorage.getItem('pk_updto');hd=sessionStorage.getItem('pk_hard')}catch(e){}if(to!=v||hd==v)return false;try{sessionStorage.setItem('pk_hard',v);sessionStorage.setItem('pk_upd','1')}catch(e){}
- var sw=navigator.serviceWorker?navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.unregister()}))}):Promise.resolve();
- sw.then(function(){return window.caches?caches.keys().then(function(k){return Promise.all(k.filter(function(x){return !/media/.test(x)}).map(function(x){return caches.delete(x)}))}):0}).catch(function(){}).then(function(){location.reload()});return true}
+ updClean().then(function(){location.reload()});return true}
 function chkUpd(){if(location.protocol=='file:'||!navigator.onLine)return;try{if(window.SWREG)window.SWREG.update().catch(function(){})}catch(e){}try{fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.v&&vnew(d.v,APPV)&&UPDSKIP!=d.v){if(updStuck(d.v))return;showUpd(d)}}).catch(function(){})}catch(e){}}
 setTimeout(chkUpd,4500);setInterval(chkUpd,1800000);document.addEventListener('visibilitychange',function(){if(!document.hidden)chkUpd()});
 var DEMO=/demo/.test(location.hash),ROLE='client',PINS={owner:'2468',driver:'1357'};
