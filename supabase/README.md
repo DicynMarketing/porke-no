@@ -1,7 +1,7 @@
 # Fase 1 · Conectar Porké No? a Supabase
 
 ## ✅ Lista de pendientes en Supabase (se actualiza en cada cambio)
-Última versión de la app: **0.11.1**. Haz solo lo que todavía no hayas hecho, en este orden:
+Última versión de la app: **0.11.2**. Haz solo lo que todavía no hayas hecho, en este orden:
 
 > Pendiente para más adelante: tarifas de delivery por zonas (hoy todo es $2.00, el mínimo; centro de Aguadulce y Pocrí = $2.00).
 
@@ -32,6 +32,8 @@
 En esta rama `index.html` ya apunta al proyecto de Supabase de Porké No?. Si `SB_URL` y `SB_KEY` quedan vacías, la app funciona igual que el prototipo.
 
 Vista previa de esta rama (Cloudflare Pages): `https://fase-1-pedidos-en-vivo.porke-no.pages.dev` (cliente) y `https://fase-1-pedidos-en-vivo.porke-no.pages.dev/equipo/` (Admin y motorizado; app separada, se puede tener junto con la del cliente en el mismo teléfono).
+
+Enlaces directos del equipo: `…/equipo/?rol=admin`, `…/equipo/?rol=cocina`, `…/equipo/?rol=motorizado`, `…/equipo/?rol=cajero`.
 
 ## 1. Crear el proyecto (lo haces tú)
 1. Entra a https://supabase.com y toca **Start your project**. Entra con tu cuenta de GitHub.
