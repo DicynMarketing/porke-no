@@ -1,1 +1,1 @@
-{"v": "0.11.5", "notes": ["El contador de la tarjeta de sellos siempre coincide con tus sellos", "App del equipo: la tablet de la cocina gira a horizontal"]}
+{"v": "0.11.6", "notes": ["Botón para activar o desactivar la impresión al aceptar el pedido (en Pedidos y en la pantalla de cocina)", "Viene desactivado: así la tablet no muestra el aviso de Android si no hay impresora", "El contador de la tarjeta de sellos siempre coincide con tus sellos"]}

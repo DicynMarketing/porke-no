@@ -799,6 +799,7 @@ document.addEventListener('click',function(e){
  if(a=='cnlgo'){cnlGo(ord(b.dataset.id),b);return}
  if(a=='prn'){var op=ord(b.dataset.id);if(op)prnDo(op);return}
  if(a=='prnset'){prnSheet();return}
+ if(a=='prntog'){PRN.auto=PRN.auto==1?0:1;prnSave();toast(PRN.auto==1?'🖨️ Se imprimirá cada pedido al aceptarlo':'🖨️ Impresión automática desactivada');admin();return}
  if(a=='prnk'){PRN[b.dataset.k]=b.dataset.v=='1'?1:b.dataset.v=='0'?0:b.dataset.v;prnSave();prnSheet();return}
  if(a=='prntest'){prnDo({num:0,time:new Date(),type:'l',name:'Prueba de impresora',phone:'',items:[{id:'0-0',q:1}],sub:5.5,fee:0,svc:0.15,t:5.65,pay:'cash',note:'Esto es una prueba'});return}
  if(a=='cier'){cierSet(b.dataset.f);return}
@@ -861,10 +862,11 @@ function cnlSheet(o){if(!o)return;var otro=CNLR=='Otro motivo';open('<h3>✖ Can
 function cnlGo(o,b){if(!o)return;var m=CNLR=='Otro motivo'?(($('cnlt')||{}).value||'').trim():CNLR;if(!m){$('er').textContent='Elige o escribe el motivo';return}b.disabled=true;
  if(!CLOUD||!SB){orders=orders.filter(function(x){return x.id!=o.id});shut();admin();return}
  SB.rpc('equipo_cancelar',{p_pedido:o.id,p_motivo:m}).then(function(r){if(r.error)throw r.error;CNLR='';shut();if(r.data)onRow(r.data,false);toast('Pedido #'+o.num+' cancelado');admin()}).catch(function(e){b.disabled=false;$('er').textContent=(e&&e.message)||'No se pudo cancelar'})}
-function aceptar(o){var pago=o.ps=='rev'||o.ps=='bad';o.ps=o.ps=='cod'?'cod':'ok';o.s=1;o.n=1;pushN(o);if(PRN.auto!==0)prnDo(o);if(!CLOUD||!SB)return;
+function aceptar(o){var pago=o.ps=='rev'||o.ps=='bad';o.ps=o.ps=='cod'?'cod':'ok';o.s=1;o.n=1;pushN(o);if(PRN.auto==1)prnDo(o);if(!CLOUD||!SB)return;
  (pago?SB.rpc('equipo_aceptar_pago',{p_pedido:o.id}):Promise.resolve({})).then(function(r){if(r.error)throw r.error;return SB.rpc('equipo_avanzar',{p_pedido:o.id,p_esperado:'recibido'})}).then(function(r){if(r.error)throw r.error;if(r.data)onRow(r.data,false)}).catch(function(e){toast((e&&e.message)||'No se pudo aceptar');sbReload()})}
 // Impresora: por el sistema (cualquier impresora instalada en la tablet) o RawBT (térmica Bluetooth, sin preguntar).
-var PRN=(function(){try{return Object.assign({auto:1,modo:'sis',ancho:'80'},JSON.parse(localStorage.getItem('pk_prn')||'{}'))}catch(e){return{auto:1,modo:'sis',ancho:'80'}}})();
+// Imprimir al aceptar viene apagado: se enciende en 🖨️ Impresora cuando la tablet ya tiene impresora (sin impresora, Android abre su buscador de impresoras).
+var PRN=(function(){try{return Object.assign({auto:0,modo:'sis',ancho:'80'},JSON.parse(localStorage.getItem('pk_prn')||'{}'))}catch(e){return{auto:0,modo:'sis',ancho:'80'}}})();
 function prnSave(){try{localStorage.setItem('pk_prn',JSON.stringify(PRN))}catch(e){}}
 function prnTxt(o){var W=PRN.ancho=='58'?32:48,L=[],ln=function(x){L.push(x)},sep=function(){ln(new Array(W+1).join('-'))},cen=function(x){x=String(x);var p=Math.max(0,Math.floor((W-x.length)/2));ln(new Array(p+1).join(' ')+x)},lr=function(a,b){a=String(a);b=String(b);var sp=W-a.length-b.length;if(sp<1){ln(a);sp=W-b.length;a=''}ln(a+new Array(Math.max(1,sp)+1).join(' ')+b)};
  cen('PORKE NO?');cen('Pedido #'+o.num);cen(new Date(o.time||Date.now()).toLocaleString('es-PA',{dateStyle:'short',timeStyle:'short'}));sep();
@@ -889,14 +891,15 @@ function cierSet(f,msg){if(!SUC)return;var c=(SUC.cierres||[]).filter(function(x
  if(CLOUD&&SB)SB.from('sucursales').update(msg!=null?{cierres:c,cierre_msg:msg}:{cierres:c}).eq('id',SUC.id).then(function(r){toast(r.error?'No se pudo guardar: '+r.error.message:msg!=null?'Mensaje guardado':(c.indexOf(f)>=0?'🚫 Local cerrado ese día':'✅ Local abierto ese día'))})}
 function espSet(m){var hasta=m?new Date(Date.now()+m*60000).toISOString():null;if(!SUC)return;SUC.espera_hasta=hasta;if(m)SUC.espera_min=Math.min(60,m);admin();
  if(CLOUD&&SB)SB.from('sucursales').update(m?{espera_hasta:hasta,espera_min:Math.min(60,m)}:{espera_hasta:null}).eq('id',SUC.id).then(function(r){toast(r.error?'No se pudo guardar: '+r.error.message:m?'⏸️ Pedidos en espera por '+m+' min':'▶️ Pedidos normales')})}
-function espAdm(){var on=enEspera(),h='<div class="espa">';h+=on?'<b>⏸️ Pedidos en espera hasta '+new Date(SUC.espera_hasta).toLocaleTimeString('es',{hour:'numeric',minute:'2-digit'})+'</b><p class="note" style="margin:4px 0 0">Los clientes ven “Tu pedido se tomará en breve”.</p><div class="row"><button data-a="esp" data-m="0">▶️ Quitar espera</button><button data-a="esp" data-m="15">+15 min</button></div>':'<b>⏸️ ¿Muchos pedidos? Pon en espera:</b><div class="row"><button data-a="esp" data-m="15">15 min</button><button data-a="esp" data-m="30">30 min</button><button data-a="esp" data-m="60">60 min</button><button data-a="prnset" style="margin-left:auto">🖨️ Impresora</button></div>';return h+'</div>'}
+function prnTog(){return'<button class="'+(PRN.auto==1?'on':'')+'" data-a="prntog">🖨️ Imprimir al aceptar: <b>'+(PRN.auto==1?'Activado':'Desactivado')+'</b></button>'}
+function espAdm(){var on=enEspera(),h='<div class="espa">';h+=on?'<b>⏸️ Pedidos en espera hasta '+new Date(SUC.espera_hasta).toLocaleTimeString('es',{hour:'numeric',minute:'2-digit'})+'</b><p class="note" style="margin:4px 0 0">Los clientes ven “Tu pedido se tomará en breve”.</p><div class="row"><button data-a="esp" data-m="0">▶️ Quitar espera</button><button data-a="esp" data-m="15">+15 min</button></div><div class="row">'+prnTog()+'<button data-a="prnset">⚙️ Impresora</button></div>':'<b>⏸️ ¿Muchos pedidos? Pon en espera:</b><div class="row"><button data-a="esp" data-m="15">15 min</button><button data-a="esp" data-m="30">30 min</button><button data-a="esp" data-m="60">60 min</button></div><div class="row">'+prnTog()+'<button data-a="prnset">⚙️ Impresora</button></div>';return h+'</div>'}
 // Pantalla de cocina: pedidos por aceptar y en preparación, grandes; sirve vertical u horizontal.
 var KDT=0;
 function girar(){try{if(APPMODE&&screen.orientation&&screen.orientation.lock)screen.orientation.lock('any').catch(function(){})}catch(e){}}
 function fsToggle(){var d=document,e=d.documentElement;try{if(d.fullscreenElement||d.webkitFullscreenElement){(d.exitFullscreen||d.webkitExitFullscreen).call(d)}else{var pr=(e.requestFullscreen||e.webkitRequestFullscreen).call(e);if(pr&&pr.then)pr.then(girar)}}catch(x){toast('Tu pantalla no permite pantalla completa')}}
 function kds(){F.classList.add('kdsw');clearInterval(KDT);KDT=setInterval(function(){if(view=='a'&&KDS)kds()},30000);
  var L=orders.filter(function(o){return o.day==today()&&o.s<2&&o.ps!='bad'}).sort(function(a,b){return (a.sched?Date.parse(a.sched):a.time)-(b.sched?Date.parse(b.sched):b.time)});
- var h='<div class="kds"><div class="kdh"><b>🍳 Cocina</b><small>'+L.length+' pedido'+(L.length==1?'':'s')+' · '+new Date().toLocaleTimeString('es',{hour:'numeric',minute:'2-digit'})+'</small><span class="sp"></span><button data-a="fs">⛶ Pantalla completa</button>'+(EQ&&EQ.rol=='cocina'?'':'<button data-a="kdsout">Volver al panel</button>')+(CLOUD&&APPMODE?'<button data-dx data-xl="'+(EQ&&EQ.rol=='cocina'?'Sí, salir (pedirá acceso otra vez)':'Sí, salir')+'" data-a="staffout">⎋ Cerrar sesión</button>':'')+'</div>';
+ var h='<div class="kds"><div class="kdh"><b>🍳 Cocina</b><small>'+L.length+' pedido'+(L.length==1?'':'s')+' · '+new Date().toLocaleTimeString('es',{hour:'numeric',minute:'2-digit'})+'</small><span class="sp"></span><button data-a="prntog">🖨️ '+(PRN.auto==1?'Imprimir: Sí':'Imprimir: No')+'</button><button data-a="fs">⛶ Pantalla completa</button>'+(EQ&&EQ.rol=='cocina'?'':'<button data-a="kdsout">Volver al panel</button>')+(CLOUD&&APPMODE?'<button data-dx data-xl="'+(EQ&&EQ.rol=='cocina'?'Sí, salir (pedirá acceso otra vez)':'Sí, salir')+'" data-a="staffout">⎋ Cerrar sesión</button>':'')+'</div>';
  if(!L.length)h+='<div class="empty" style="font-size:20px">Sin pedidos por preparar 🐷</div>';
  h+='<div class="kdg">'+L.map(function(o){var mn=Math.floor((Date.now()-o.time)/60000),d=o.type=='d',cls=o.s==0?'nv':mn>=20&&!o.sched?'tarde':'pr';
   var bt=o.s==0?(o.ps=='rev'?'<button class="ok" data-a="acc" data-id="'+o.id+'">✅ Verificar pago y aceptar</button>':'<button class="ok" data-a="acc" data-id="'+o.id+'">✅ Aceptar</button>'):
@@ -908,7 +911,7 @@ function admin(){if(KDS&&APPMODE){kds();return}clearInterval(KDT);F.classList.re
  var CJ=cajMode();if(CJ)admTab='ped';
  h+='<div class="atabs"'+(CJ?' style="grid-template-columns:1fr"':'')+'>'+ATB.filter(function(x){return !CJ||x[0]=='ped'}).map(function(x){return'<button class="at'+(x[0]==admTab?' on':'')+'" style="--ac:'+x[3]+'" data-a="atab" data-t="'+x[0]+'"><i>'+x[1]+'</i>'+x[2]+'</button>'}).join('')+'</div>';
  if(admTab=='ped'){
-  h+=(ro?'':(CJ?'<div class="espa"><div class="row"><button data-a="prnset">🖨️ Impresora</button><button data-a="kdsgo">🍳 Ver como cocina</button></div></div>':espAdm()))+cal()+'<div class="stats"><div class="stat" style="--ac:#f7a8d4"><b>'+d0.length+'</b><span>Ventas (pedidos)</span></div><div class="stat" style="--ac:#3fe0a0"><b>$'+fmt(Tt)+'</b><span>Ingresos del día</span></div><div class="stat" style="--ac:#ffc247"><b>'+P+'</b><span>Pendientes</span></div></div>';
+  h+=(ro?'':(CJ?'<div class="espa"><div class="row">'+prnTog()+'<button data-a="prnset">⚙️ Impresora</button><button data-a="kdsgo">🍳 Ver como cocina</button></div></div>':espAdm()))+cal()+'<div class="stats"><div class="stat" style="--ac:#f7a8d4"><b>'+d0.length+'</b><span>Ventas (pedidos)</span></div><div class="stat" style="--ac:#3fe0a0"><b>$'+fmt(Tt)+'</b><span>Ingresos del día</span></div><div class="stat" style="--ac:#ffc247"><b>'+P+'</b><span>Pendientes</span></div></div>';
   if(!d0.length)h+='<div class="empty">'+(ro?'No hubo pedidos este día.':'Aún no hay pedidos hoy.<br>Haz uno desde la app del cliente y aparecerá aquí.')+'</div>';
  d0.forEach(function(o){var hr=o.time.toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'}),d=o.type=='d',ac='';
   var pv=o.ps=='rev'||o.ps=='bad';
@@ -947,7 +950,7 @@ function drv(){var mine=orders.filter(function(o){return o.drv==cd&&o.s==2}),dn=
  if(CLOUD&&APPMODE&&mine.length)h+='<p class="note" style="padding:0 14px">📡 Compartiendo tu ubicación con el cliente mientras entregas.</p>';
  if(CLOUD&&APPMODE)h+='<div style="padding:12px"><button class="b2" data-a="staffout" style="width:100%;padding:10px">Cerrar sesión</button></div>';
  scr.innerHTML=h;if(CLOUD&&APPMODE&&EQ&&EQ.rol=='motorizado')rdShare(mine.length>0)}
-var APPV='0.11.5',UPDSKIP='';
+var APPV='0.11.6',UPDSKIP='';
 // Pedidos en espera (el admin lo activa cuando hay muchos pedidos).
 function ev(n,x){try{if(window.posthog&&posthog.capture)posthog.capture(n,x||{})}catch(e){}}
 function enEspera(){return !!(SUC&&SUC.espera_hasta&&Date.parse(SUC.espera_hasta)>Date.now())}
