@@ -1,0 +1,3 @@
+# App del equipo (administrador y motorizado) en su propia dirección, separada de la app del cliente.
+/equipo  /equipo/  301
+/equipo/*  /:splat  200
