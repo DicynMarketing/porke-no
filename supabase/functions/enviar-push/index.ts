@@ -89,6 +89,15 @@ async function armar(db: any, f: Fila): Promise<Aviso | null> {
   }
   if (f.tipo === "entrega") {
     if (!p.motorizado_id) return null;
+    // Repetición cada 30 s (pg_cron) hasta que el motorizado toque "Ya lo vi" en la app.
+    if ((f.datos as Record<string, unknown>)?.repite && (p.estado !== "en_camino" || p.entrega_vista_en)) return null;
+    if ((f.datos as Record<string, unknown>)?.repite) {
+      return {
+        usuarios: [p.motorizado_id], app: "equipo", tag: `pedido-${p.id}-entrega`, image: IMG("en_camino"),
+        title: `🔔 ¡Tienes una entrega! #${p.numero}`,
+        body: `Abre la app y toca "Ya lo vi" · ${p.nombre}${p.metodo_pago === "efectivo" ? ` · Cobrar ${dinero(p.total)}` : ""}`,
+      };
+    }
     return {
       usuarios: [p.motorizado_id], app: "equipo", tag: `pedido-${p.id}-entrega`, image: IMG("en_camino"),
       title: `🛵 Nueva entrega #${p.numero}`,
@@ -104,7 +113,7 @@ async function armar(db: any, f: Fila): Promise<Aviso | null> {
       : { ...cliente, tag: tagPago, image: IMG("recibido"), title: "Verifica tu pago", body: `Pedido #${p.numero} · No vimos el pago en la cuenta del local. Toca para ver opciones.` };
   }
   const textos: Record<string, [string, string]> = {
-    preparando: ["✅ Pedido tomado", "Ya lo estamos preparando 🔥"],
+    preparando: ["🔥 Preparando tu pedido", "Ya lo estamos preparando en la plancha 🐷"],
     en_camino: delivery
       ? ["¡Tu pedido va en camino!", "El repartidor va hacia ti 🛵"]
       : ["¡Tu pedido está listo!", "Ya puedes pasar a recogerlo 🛍️"],

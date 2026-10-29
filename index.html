@@ -82,6 +82,7 @@ body.app .frame.kdsw{max-width:none!important}.kds{min-height:100%;background:#0
 .kq header{display:flex;justify-content:space-between;align-items:baseline}.kq header b{font:400 30px/1 'Bebas Neue',Impact,sans-serif}.kq header em{font-style:normal;font-weight:800;font-size:15px}
 .kq .kn{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.kq .ki{font-size:14px;line-height:1.25;font-weight:600;overflow:hidden;flex:1 1 auto;min-height:0}.kq .kt{margin-top:auto}.kq .kv{align-self:flex-start;background:#1a1a1a;color:#ffe680;border-radius:6px;padding:1px 7px;font-size:12px;font-weight:800}.kq .ki div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.kq .ki i{font-style:normal;opacity:.7}
 .kq .kb{display:block;width:100%;margin-top:auto;flex:none;border:0;border-radius:10px;padding:8px;font:800 14px Barlow,sans-serif;background:#1a1a1a;color:#fff}.kq .kt{font-weight:800;font-size:13px}
+.rdnew{border:2px solid #ff5fa2;box-shadow:0 0 0 0 #ff5fa2;animation:rdpl 1.2s ease-in-out infinite}@keyframes rdpl{50%{box-shadow:0 0 0 8px #ff5fa255}}.rdal{background:#ff5fa2;color:#1a1a1a;border-radius:14px;padding:12px;margin-bottom:10px;font:400 26px/1.1 'Bebas Neue',Impact,sans-serif;text-align:center}.rdal small{display:block;font:700 14px Barlow,sans-serif;margin:2px 0 8px}.rdal .cta{background:#1a1a1a;color:#fff}
 .kdx{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.38);opacity:0;transition:opacity .3s}.kdx.on{opacity:1}
 .kdp{position:fixed;z-index:61;border-radius:10px 10px 22px 10px;background:var(--kc);color:#1a1a1a;box-shadow:0 20px 50px rgba(0,0,0,.6);overflow:hidden;transform-origin:0 0;transition:transform .38s cubic-bezier(.2,.85,.25,1)}.kdp.k-nv{--kc:#fff0a8}.kdp.k-pr{--kc:#d3f8df}.kdp.k-tarde{--kc:#ffcfae}.kdp.k-rl{--kc:#cfe9ff}.kdp.k-cm{--kc:#ffd6ea}.kdp.k-ok{--kc:#d6d6d6}
 .kpi{max-height:inherit;overflow:auto;padding:16px 18px 18px;opacity:0;transition:opacity .2s}.kdp.on .kpi{opacity:1;transition-delay:.15s}
@@ -367,7 +368,7 @@ gpsf:["No se pudo obtener el GPS. Toca el mapa para marcar tu casa.","Couldn’t
 ln:["Es opcional: puedes pedir sin cuenta. En este prototipo el acceso es simulado; en la versión real se conecta con Google de verdad.","Optional: you can order without an account. Sign-in is simulated in this prototype; the real version connects to Google.","Opcional: você pode pedir sem conta. O acesso é simulado no protótipo; a versão real conecta com o Google."],
 lm:["Tu correo de Gmail","Your Gmail address","Seu e-mail do Gmail"],lc:["Continuar","Continue","Continuar"],ls:["Seguir sin cuenta","Continue without account","Continuar sem conta"],le:["Escribe un correo de Gmail válido.","Enter a valid Gmail address.","Digite um e-mail do Gmail válido."],lo:["Cerrar sesión","Sign out","Sair"],
 sent:["¡Pedido enviado!","Order sent!","Pedido enviado!"],sentn:["Ya llegó al panel del local.","It already reached the store panel.","Já chegou ao painel da loja."],wa:["Enviar también por WhatsApp","Also send on WhatsApp","Enviar também pelo WhatsApp"],follow:["Seguir mi pedido","Track my order","Acompanhar meu pedido"],
-st0:["Recibido","Received","Recebido"],st1:["Pedido tomado","Order accepted","Pedido aceito"],st2d:["En camino","On the way","A caminho"],st2l:["Listo para recoger","Ready for pickup","Pronto para retirar"],st3:["Entregado","Delivered","Entregue"],
+st0:["Recibido","Received","Recebido"],st1:["Preparando tu pedido","Preparing your order","Preparando seu pedido"],st2d:["En camino","On the way","A caminho"],st2l:["Listo para recoger","Ready for pickup","Pronto para retirar"],st3:["Entregado","Delivered","Entregue"],
 soon:["ya casi","almost","quase"],rate_me:["Califica el servicio","Rate the service","Avalie o serviço"],left:["faltan ~{0} min","~{0} min left","faltam ~{0} min"],near:["ya casi llega","almost there","quase chegando"],drvl:["Repartidor","Courier","Entregador"],close:["Cerrar","Close","Fechar"],
 deliv:["¡Entregado!","Delivered!","Entregue!"],tg0:["Fue rápido","Fast","Foi rápido"],tg1:["Pedido completo","Order complete","Pedido completo"],tg2:["Llegó a tiempo","On time","Chegou no horário"],tg3:["Buena atención","Great service","Bom atendimento"],
 rsend:["Enviar calificación","Send rating","Enviar avaliação"],later:["Ahora no","Not now","Agora não"],rtap:["Toca las estrellas para calificar.","Tap the stars to rate.","Toque nas estrelas para avaliar."],thx:["Gracias por calificar","Thanks for rating","Obrigado pela avaliação"],
@@ -812,6 +813,7 @@ document.addEventListener('click',function(e){
  if(a=='lg'){legal(b.dataset.k,true);return}
  if(a=='acc'){var oa=ord(b.dataset.id);if(!oa||oa.s>0)return;aceptar(oa);admin();return}
  if(a=='fs'){fsToggle();return}
+ if(a=='rdvi'){var ov=ord(b.dataset.id);if(!ov)return;ov.seen=true;if(CLOUD&&SB)SB.rpc('motorizado_vi_entrega',{p_pedido:ov.id}).then(function(){},function(){});drv();return}
  if(a=='kopen'){kdOpen(b.dataset.id);return}
  if(a=='kcl'){kdClose();return}
  if(a=='kprf'){var oz2=ord(b.dataset.id);if(!oz2||!oz2.proof)return;var im=document.createElement('div');im.className='kim';im.setAttribute('data-a','kimc');im.innerHTML='<img src="'+oz2.proof+'" alt="Comprobante"><button data-a="kimc">✕ Cerrar</button>';document.body.appendChild(im);return}
@@ -879,7 +881,7 @@ var admTab='ped',ATB=[['ped','📋','Pedidos','#f7a8d4'],['ven','📊','Ventas',
 var GCOL=['#ff7a59','#ffc247','#5aa9ff','#f7a8d4'];
 function sect(t,col,body,sub){return'<div class="sect" style="--ac:'+col+'"><div class="sh"><b>'+t+'</b>'+(sub?'<small>'+sub+'</small>':'')+'</div>'+body+'</div>'}
 function sw(attr,on,lab){return'<label class="sw2"><input type="checkbox" '+attr+(on?' checked':'')+'><i></i><span>'+lab+'</span></label>'}
-// Aceptar pedido: verifica el pago si hacía falta, lo pasa a "Pedido tomado" (el cliente recibe el aviso) e imprime la comanda.
+// Aceptar pedido: verifica el pago si hacía falta, lo pasa a "Preparando tu pedido" (el cliente recibe el aviso) e imprime la comanda.
 // Cancelar con motivo: el cliente recibe el motivo en su aviso.
 var CNLR='',CNLM=['Se agotó un producto','Estamos por cerrar','Fuera de nuestra zona de entrega','Pago no recibido','Pedido duplicado','Otro motivo'];
 function cnlSheet(o){if(!o)return;var otro=CNLR=='Otro motivo';open('<h3>✖ Cancelar pedido #'+o.num+'</h3><p class="note">Elige el motivo. Le llega al cliente en su aviso.</p><div class="cnr">'+CNLM.map(function(m){return'<button class="'+(CNLR==m?'on':'')+'" data-a="cnlr" data-r="'+m+'" data-id="'+o.id+'">'+m+'</button>'}).join('')+'</div>'+(otro?'<textarea id="cnlt" rows="2" maxlength="120" placeholder="Escribe el motivo"></textarea>':'')+'<div class="err" id="er"></div><button class="cta red" data-a="cnlgo" data-id="'+o.id+'">Cancelar pedido</button><button class="cta wa" data-a="close">Volver</button>')}
@@ -1006,11 +1008,15 @@ function admin(){if(KDS&&APPMODE){kds();return}kdKill();clearInterval(KDT);F.cla
 function drv(){var mine=orders.filter(function(o){return o.drv==cd&&o.s==2}),dn=orders.filter(function(o){return o.drv==cd&&o.s==3&&o.day==today()}).length;
  var h=hdr('Repartidor','Solo ves tus entregas')+pushBan()+'<div style="padding:12px"><label style="margin-top:0">Soy</label><select id="cd">'+DRV.map(function(x){return'<option'+(x==cd?' selected':'')+'>'+esc(x)+'</option>'}).join('')+'</select><p class="note">Entregas de hoy: '+dn+'</p></div>';
  if(!mine.length)h+='<div class="empty">No tienes entregas asignadas.<br>Cuando el local te asigne una, aparece aquí.</div>';
- mine.forEach(function(o){h+='<div class="ord"><h4>Entrega</h4><p><b>'+esc(o.name)+'</b></p>'+mapSvg(o.loc)+''+drvPay(o)+'<p>📍 '+esc(o.ref)+'</p>'+(o.loc.gps?'<a class="b2 lk" target="_blank" rel="noopener" href="https://maps.google.com/?q='+o.loc.gps+'">Abrir en Google Maps</a>':'')+'<button class="cta" data-a="deliv" data-id="'+o.id+'">Marcar entregado</button></div>'});
+ mine.forEach(function(o){h+='<div class="ord'+(o.seen===false?' rdnew':'')+'">'+(o.seen===false?'<div class="rdal">🔔 ¡NUEVA ENTREGA #'+o.num+'!<small>Toca para confirmar que la viste</small><button class="cta" data-a="rdvi" data-id="'+o.id+'">✅ Ya lo vi</button></div>':'')+'<h4>Entrega</h4><p><b>'+esc(o.name)+'</b></p>'+mapSvg(o.loc)+''+drvPay(o)+'<p>📍 '+esc(o.ref)+'</p>'+(o.loc.gps?'<a class="b2 lk" target="_blank" rel="noopener" href="https://maps.google.com/?q='+o.loc.gps+'">Abrir en Google Maps</a>':'')+'<button class="cta" data-a="deliv" data-id="'+o.id+'">Marcar entregado</button></div>'});
  if(CLOUD&&APPMODE&&mine.length)h+='<p class="note" style="padding:0 14px">📡 Compartiendo tu ubicación con el cliente mientras entregas.</p>';
  if(CLOUD&&APPMODE)h+='<div style="padding:12px"><button class="b2" data-a="staffout" style="width:100%;padding:10px">Cerrar sesión</button></div>';
- scr.innerHTML=h;if(CLOUD&&APPMODE&&EQ&&EQ.rol=='motorizado')rdShare(mine.length>0)}
-var APPV='0.12.1',UPDSKIP='';
+ scr.innerHTML=h;if(CLOUD&&APPMODE&&EQ&&EQ.rol=='motorizado')rdShare(mine.length>0);rdAlarm(mine.some(function(o){return o.seen===false}))}
+// Alarma del motorizado: suena "tin tin" y vibra hasta que toque "Ya lo vi" (el servidor también repite el aviso cada 30 s).
+var RDA=0,RDC=null;
+function rdTin(){try{RDC=RDC||new(window.AudioContext||window.webkitAudioContext)();if(RDC.state=='suspended')RDC.resume();[0,.28].forEach(function(t){var o=RDC.createOscillator(),g=RDC.createGain(),a=RDC.currentTime+t;o.type='sine';o.frequency.value=1320;g.gain.setValueAtTime(.0001,a);g.gain.exponentialRampToValueAtTime(.6,a+.01);g.gain.exponentialRampToValueAtTime(.0001,a+.24);o.connect(g);g.connect(RDC.destination);o.start(a);o.stop(a+.25)})}catch(e){}try{navigator.vibrate&&navigator.vibrate([250,120,250])}catch(e){}}
+function rdAlarm(on){if(on&&!RDA){rdTin();RDA=setInterval(function(){if(view!='r'){clearInterval(RDA);RDA=0;return}if(!document.hidden)rdTin()},2500)}else if(!on&&RDA){clearInterval(RDA);RDA=0}}
+var APPV='0.12.2',UPDSKIP='';
 // Pedidos en espera (el admin lo activa cuando hay muchos pedidos).
 function ev(n,x){try{if(window.posthog&&posthog.capture)posthog.capture(n,x||{})}catch(e){}}
 function enEspera(){return !!(SUC&&SUC.espera_hasta&&Date.parse(SUC.espera_hasta)>Date.now())}
@@ -1247,7 +1253,7 @@ var ADT=0;function cloudAddr(){if(!CLOUD||!SB||!user)return;clearTimeout(ADT);AD
 function sbReady(){return SBR||(SBR=sbLoad().then(sbSuc).then(sbUser).catch(function(e){SBR=null;throw e}))}
 function reRender(){if(view=='c'){var st=scr.scrollTop;home();scr.scrollTop=st}else if(view=='a')admin();else if(view=='r')drv()}
 function rowOrd(r){return{sched:r.programado_para||null,id:r.id,day:r.dia,num:r.numero,time:new Date(r.creado_en),type:r.tipo=='delivery'?'d':'l',name:r.nombre,phone:r.telefono,ref:r.referencia||'',
- loc:r.lat!=null?{x:170,y:120,gps:(+r.lat).toFixed(5)+','+(+r.lng).toFixed(5)}:null,pay:PAYAPP[r.metodo_pago],ps:PSAPP[r.estado_pago],proof:r.comprobante_whatsapp?'wa':null,path:r.comprobante_path,
+ loc:r.lat!=null?{x:170,y:120,gps:(+r.lat).toFixed(5)+','+(+r.lng).toFixed(5)}:null,pay:PAYAPP[r.metodo_pago],ps:PSAPP[r.estado_pago],seen:r.entrega_vista_en!==undefined?!!r.entrega_vista_en:true,proof:r.comprobante_whatsapp?'wa':null,path:r.comprobante_path,
  items:(r.productos||[]).map(function(p){var x={id:p.codigo,d:!!p.doble,q:p.cantidad,pr:!!p.promo,cp:!!p.cupon};if(p.sabor)x.f=p.sabor;if(p.componentes)x.k=p.componentes.map(function(c){return c.cantidad+' '+c.nombre});if(isC(p.codigo)&&!cmb(p.codigo))CMBX[p.codigo.slice(2)]={id:p.codigo.slice(2),nombre:p.nombre,precio:p.precio_unitario,items:[],dias:[],activa:false};return x}).filter(function(x){if(isC(x.id))return true;var a=x.id.split('-');return MENU[+a[0]]&&MENU[+a[0]].i[+a[1]]}),
  sub:+r.subtotal,fee:+r.envio,svc:+r.servicio,tip:+r.propina||0,motivo:r.motivo_cancelacion||'',email:r.correo||'',t:+r.total,s:Math.max(0,EST.indexOf(r.estado)),drv:r.motorizado_nombre||null,rate:r.calificacion||0,tags:r.etiquetas||[],
  note:r.nota||'',cafe:!!r.cafe_gratis,dist:r.distancia_km!=null?+r.distancia_km:null,gone:r.estado=='cancelado'}}
