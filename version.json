@@ -1,1 +1,1 @@
-{"v": "0.11.3", "notes": ["Equipo: botón Cerrar sesión en todas las pantallas", "La pantalla de cocina pide acceso como el motorizado (sin contraseña) y el admin la aprueba", "Opción Cajero: muestra solo Pedidos"]}
+{"v": "0.11.4", "notes": ["Al abrir o actualizar ya no aparece la pantalla vieja de prueba por un instante", "App del equipo: se puede usar en vertical u horizontal"]}

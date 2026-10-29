@@ -271,7 +271,7 @@ body.app .top{display:none}
 .pc{flex:0 0 78%;scroll-snap-align:center;border-radius:18px;padding:16px;min-height:130px;display:flex;flex-direction:column;justify-content:center;gap:4px;color:#fff;opacity:.55;transform:scale(.94);transition:.25s;box-shadow:inset 0 1px 0 #fff6,0 6px 14px #0008}.pc.sel{opacity:1;transform:none}.pc i{font-style:normal;font-size:30px}.pc b{font:400 28px/1 'Bebas Neue',Impact,sans-serif;letter-spacing:.04em}.pc small{opacity:.9;font-size:13px}.pc .b2{margin-top:8px;align-self:flex-start;color:#fff;border-color:#fff}
 .pc-add{background:repeating-linear-gradient(135deg,#2a1a24,#2a1a24 10px,#241520 10px,#241520 20px);border:2px dashed #f7a8d4}.pc-card{background:linear-gradient(135deg,#ff5fa8,#b3236a)}.pc-yappy{background:linear-gradient(135deg,#2d8cff,#1747b8)}.pc-tr{background:linear-gradient(135deg,#1fa39a,#0d5a56)}.pc-cash{background:linear-gradient(135deg,#3fe0a0,#168a5c)}
 .dots{display:flex;justify-content:center;gap:6px;margin:2px 0 6px}.dots span{width:7px;height:7px;border-radius:50%;background:#444;transition:.2s}.dots span.on{width:20px;border-radius:5px;background:#7dffc8}.ln.ro{padding:7px 0}</style></head>
-<body>
+<body class="app">
 <div id="pkupd" role="status" aria-live="polite"><small id="pkupdt">Actualizando…</small><div class="pkb"><i id="pkupdb"></i></div><video id="pkupdv" autoplay loop muted playsinline preload="auto" poster="assets/carga/cerdito-poster.png" aria-hidden="true"><source src="assets/carga/cerdito-carga.webm" type="video/webm"><source src="assets/carga/cerdito-carga.mp4" type="video/mp4"></video><button id="pkupdr" data-a="updretry" hidden>Reintentar</button><button id="pkupdx" class="pkx" data-a="updclose" hidden>Seguir sin actualizar</button></div>
 <svg style="position:absolute;width:0;height:0" aria-hidden="true"><defs>
 <radialGradient id="gbg" cx=".5" cy=".4" r=".8"><stop offset="0" stop-color="#4a2c1c"/><stop offset="1" stop-color="#150b07"/></radialGradient>
@@ -286,7 +286,7 @@ body.app .top{display:none}
 <div class="top"><b>Porké No?</b><small>App v0.8 · prototipo</small>
  <div class="sw"><button id="vc" class="on">App cliente</button><button id="va">Admin<i id="nb" hidden>0</i></button><button id="vr">Repartidor</button><button id="vm">📱 Abrir en modo app (pantalla completa)</button></div></div>
 <div class="stage"><div class="frame" id="frame"><div class="scr" id="scr"></div><div id="shade" data-a="close"></div><div id="sheet"></div><div id="toast"></div><div id="upd" hidden></div><div id="npush" data-a="nclose"></div><div id="isle" data-a="nopen"></div><button id="hnd" hidden aria-label="Menú de demostración">‹</button>
- <div id="splash"><img id="slg" src="assets/logo.png" alt="Porké No?"><small>Versión 0.5 · prototipo</small></div></div></div>
+ <div id="splash"><img id="slg" src="assets/logo.png" alt="Porké No?"><small></small></div></div></div>
 <script>
 // Supabase: URL del proyecto y clave pública (publishable/anon). Vacías = modo prototipo, todo queda en el teléfono.
 // Estadísticas de uso (PostHog): pega aquí la clave pública del proyecto (empieza con phc_). Vacía = apagado.
@@ -946,7 +946,7 @@ function drv(){var mine=orders.filter(function(o){return o.drv==cd&&o.s==2}),dn=
  if(CLOUD&&APPMODE&&mine.length)h+='<p class="note" style="padding:0 14px">📡 Compartiendo tu ubicación con el cliente mientras entregas.</p>';
  if(CLOUD&&APPMODE)h+='<div style="padding:12px"><button class="b2" data-a="staffout" style="width:100%;padding:10px">Cerrar sesión</button></div>';
  scr.innerHTML=h;if(CLOUD&&APPMODE&&EQ&&EQ.rol=='motorizado')rdShare(mine.length>0)}
-var APPV='0.11.3',UPDSKIP='';
+var APPV='0.11.4',UPDSKIP='';
 // Pedidos en espera (el admin lo activa cuando hay muchos pedidos).
 function ev(n,x){try{if(window.posthog&&posthog.capture)posthog.capture(n,x||{})}catch(e){}}
 function enEspera(){return !!(SUC&&SUC.espera_hasta&&Date.parse(SUC.espera_hasta)>Date.now())}
@@ -975,7 +975,11 @@ function updClean(){var sw=navigator.serviceWorker?navigator.serviceWorker.getRe
  return sw.then(function(){return window.caches?caches.keys().then(function(k){return Promise.all(k.filter(function(x){return !/media/.test(x)}).map(function(x){return caches.delete(x)}))}):0}).catch(function(){})}
 // Al abrir la versión nueva: la pantalla sigue hasta que la app está lista y luego se desvanece.
 function updBoot(){var h=document.documentElement;if(!h.classList.contains('pk-boot'))return;try{sessionStorage.removeItem('pk_upd')}catch(e){}updVideo();var sp=$('splash');if(sp)sp.classList.add('out');
- requestAnimationFrame(function(){requestAnimationFrame(function(){setTimeout(function(){var o=$('pkupd');o.style.transition='opacity .25s ease';o.style.opacity=0;setTimeout(function(){h.classList.remove('pk-upd','pk-boot');o.style.opacity='';entry()},260)},350)})})}
+ var fade=function(){var o=$('pkupd');o.style.transition='opacity .25s ease';o.style.opacity=0;setTimeout(function(){h.classList.remove('pk-upd','pk-boot');o.style.opacity='';entry()},260)};
+ if(APPMODE){entry();eqListo(fade);return}
+ requestAnimationFrame(function(){requestAnimationFrame(function(){setTimeout(fade,350)})})}
+// App del equipo: el logo (o el cerdito al actualizar) se queda hasta que la pantalla final está lista; nunca se ve "Conectando…".
+function eqListo(cb){var t0=Date.now(),f=function(){var c=view!='x'||!/Conectando…/.test(scr.textContent||'');if((c&&Date.now()-t0>500)||Date.now()-t0>9000)cb();else setTimeout(f,150)};setTimeout(f,150)}
 setTimeout(function(){try{new Image().src='assets/carga/cerdito-poster.png'}catch(e){}},3000);
 // Si se actualizó y aun así quedó una versión vieja (teléfono que se saltó varias), se limpia todo una vez y se abre la última.
 function updStuck(v){var to='',hd='';try{to=sessionStorage.getItem('pk_updto');hd=sessionStorage.getItem('pk_hard')}catch(e){}if(to!=v||hd==v)return false;try{sessionStorage.setItem('pk_hard',v);sessionStorage.setItem('pk_upd','1')}catch(e){}
@@ -1299,7 +1303,7 @@ home();updBoot();
 // Estadísticas anónimas: solo en la app del cliente, sin nombre, correo ni teléfono.
 if(POSTHOG_KEY&&!APPMODE){try{!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split('.');2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement('script')).type='text/javascript',p.crossOrigin='anonymous',p.async=!0,p.src=s.api_host.replace('.i.posthog.com','-assets.i.posthog.com')+'/static/array.js',(r=t.getElementsByTagName('script')[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a='posthog',u.people=u.people||[],u.toString=function(t){var e='posthog';return'posthog'!==a&&(e+='.'+a),t||(e+=' (stub)'),e},u.people.toString=function(){return u.toString(1)+'.people (stub)'},o='capture identify reset register opt_out_capturing opt_in_capturing'.split(' '),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
  posthog.init(POSTHOG_KEY,{api_host:POSTHOG_HOST,autocapture:false,capture_pageview:true,disable_session_recording:true,person_profiles:'never',persistence:'localStorage',property_denylist:['$ip']});posthog.register({version:APPV})}catch(e){}}
-if(SENTRY_DSN){try{var _se=document.createElement('script');_se.src='https://browser.sentry-cdn.com/8.33.1/bundle.min.js';_se.crossOrigin='anonymous';_se.onload=function(){try{Sentry.init({dsn:SENTRY_DSN,release:'porkeno@'+APPV,environment:APPMODE?'equipo':'cliente',sendDefaultPii:false,tracesSampleRate:0,beforeSend:function(ev){if(ev.user)delete ev.user;return ev}})}catch(e){}};document.head.appendChild(_se)}catch(e){}}if(APPMODE&&/[?&]probar-actualizacion=1/.test(location.search))setTimeout(function(){applyUpd(true)},400);setTimeout(function(){$('splash').classList.add('out');entry()},matchMedia('(prefers-reduced-motion:reduce)').matches?300:2600);
+if(SENTRY_DSN){try{var _se=document.createElement('script');_se.src='https://browser.sentry-cdn.com/8.33.1/bundle.min.js';_se.crossOrigin='anonymous';_se.onload=function(){try{Sentry.init({dsn:SENTRY_DSN,release:'porkeno@'+APPV,environment:APPMODE?'equipo':'cliente',sendDefaultPii:false,tracesSampleRate:0,beforeSend:function(ev){if(ev.user)delete ev.user;return ev}})}catch(e){}};document.head.appendChild(_se)}catch(e){}}if(APPMODE&&/[?&]probar-actualizacion=1/.test(location.search))setTimeout(function(){applyUpd(true)},400);if(APPMODE&&!document.documentElement.classList.contains('pk-boot')){entry();eqListo(function(){$('splash').classList.add('out')})}else if(!APPMODE)setTimeout(function(){$('splash').classList.add('out');entry()},matchMedia('(prefers-reduced-motion:reduce)').matches?300:2600);
 $('splash').onclick=function(){this.classList.add('out');entry()};
 function demoMenu(){var bt=function(v,l){return can(v)?'<button class="lg'+(view==v?' on':'')+'" data-a="dv" data-v="'+v+'">'+l+'</button>':''};open('<h3>'+(DEMO?'Demostración':'Cambiar de vista')+'</h3><div class="langs">'+bt('c',ROLE=='client'?'Cliente':'Pedir (cliente)')+bt('a','Administrador')+bt('r','Repartidor')+'</div>'+(ROLE!='client'?'<button class="cta wa" data-a="staffout">'+(APPMODE?(CLOUD?'Cerrar sesión':'Bloquear app (pedir PIN)'):'Cerrar sesión de personal')+'</button>':'')+(DEMO?'<button class="cta wa" data-a="exitapp">Salir del modo app</button>':'')+'<button class="cta" data-a="close">Cerrar</button>')}
 function setApp(on){document.body.classList.toggle('app',on);$('hnd').hidden=!(on&&(DEMO||(ROLE!='client'&&!(APPMODE&&ROLE=='driver'))))}
