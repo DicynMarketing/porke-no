@@ -9,6 +9,8 @@
 // Secrets que necesita (Edge Functions › Secrets):
 //   VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT (mailto:…)
 // Verify JWT: APAGADO (la llama la base de datos, que no tiene sesión).
+// POST {prueba:true} con sesión → a los 15 s manda un aviso de prueba solo a
+//        los teléfonos de esa persona (para probar con la app cerrada).
 
 import webpush from "npm:web-push@3.6.7";
 import { createClient } from "npm:@supabase/supabase-js@2.117.3";
@@ -128,6 +130,43 @@ async function armar(db: any, f: Fila): Promise<Aviso | null> {
   return t ? { ...cliente, tag: `pedido-${p.id}-${etapa}`, image: IMG(etapa), title: t[0], body: `Pedido #${p.numero} · ${t[1]}` } : null;
 }
 
+type Sub = { id: number; endpoint: string; p256dh: string; auth: string; app: string };
+// deno-lint-ignore no-explicit-any
+async function enviar(db: any, vapidDetails: any, aviso: Aviso, subs: Sub[]) {
+  const n = { enviados: 0, borrados: 0, fallidos: 0 };
+  const vistos = new Set<string>();
+  for (const s of subs) {
+    if (vistos.has(s.endpoint)) continue; // un mismo teléfono recibe el aviso una sola vez
+    vistos.add(s.endpoint);
+    const app = aviso.app ?? s.app;
+    const url = (app === "equipo" ? "./?app=equipo" : "./") + (aviso.hash ? `#${aviso.hash}` : "");
+    const payload = JSON.stringify({ title: aviso.title, body: aviso.body, tag: aviso.tag, image: aviso.image, app, url });
+    try {
+      const r = webpush.generateRequestDetails(
+        { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
+        payload,
+        { vapidDetails, TTL: 1800, urgency: "high" }, // llega de inmediato; si el teléfono está apagado más de 30 min, ya no sirve
+      );
+      const headers = { ...r.headers } as Record<string, string>;
+      delete headers["Content-Length"]; // fetch la calcula sola
+      const res = await fetch(r.endpoint, { method: r.method, headers, body: r.body });
+      if (res.status === 404 || res.status === 410) {
+        await db.from("suscripciones_push").delete().eq("id", s.id);
+        n.borrados++;
+      } else if (res.ok) {
+        n.enviados++;
+      } else {
+        n.fallidos++;
+        console.error("push", res.status, await res.text());
+      }
+    } catch (e) {
+      n.fallidos++;
+      console.error("push", e);
+    }
+  }
+  return n;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   const publica = Deno.env.get("VAPID_PUBLIC_KEY") ?? "";
@@ -145,6 +184,25 @@ Deno.serve(async (req) => {
   const db = createClient(Deno.env.get("SUPABASE_URL")!, claveSecreta(), {
     auth: { persistSession: false, autoRefreshToken: false },
   });
+
+  let cuerpo: Record<string, unknown> = {};
+  try { cuerpo = await req.json(); } catch { /* la base de datos manda {} */ }
+  if (cuerpo.prueba === true) {
+    const jwt = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
+    const { data: au } = await db.auth.getUser(jwt);
+    if (!au?.user) return json(401, { error: "Inicia sesión para probar los avisos." });
+    const app = cuerpo.app === "cliente" ? "cliente" : "equipo";
+    const { data: subs } = await db.from("suscripciones_push").select("id, endpoint, p256dh, auth, app").eq("usuario_id", au.user.id).eq("app", app);
+    if (!subs?.length) return json(409, { error: "Este teléfono no tiene los avisos activados. Toca \"Activar notificaciones\"." });
+    const aviso: Aviso = { usuarios: [au.user.id], app, tag: `prueba-${Date.now()}`, image: IMG("en_camino"),
+      title: "🔔 Prueba de aviso · Porké No?", body: "¡Llegó! Así te avisaremos de cada entrega aunque la app esté cerrada." };
+    // deno-lint-ignore no-explicit-any
+    (globalThis as any).EdgeRuntime?.waitUntil((async () => {
+      await new Promise((r) => setTimeout(r, 15000));
+      console.log("prueba", au.user.id, JSON.stringify(await enviar(db, vapidDetails, aviso, subs as Sub[])));
+    })());
+    return json(200, { ok: true, telefonos: subs.length });
+  }
 
   let enviados = 0, borrados = 0, fallidos = 0;
   for (let vuelta = 0; vuelta < 5; vuelta++) {
@@ -165,36 +223,9 @@ Deno.serve(async (req) => {
       if (aviso.app) q = q.eq("app", aviso.app);
       const { data: subs } = await q;
 
-      const vistos = new Set<string>();
-      for (const s of subs ?? []) {
-        if (vistos.has(s.endpoint)) continue; // un mismo teléfono recibe el aviso una sola vez
-        vistos.add(s.endpoint);
-        const app = aviso.app ?? s.app;
-        const url = (app === "equipo" ? "./?app=equipo" : "./") + (aviso.hash ? `#${aviso.hash}` : "");
-        const payload = JSON.stringify({ title: aviso.title, body: aviso.body, tag: aviso.tag, image: aviso.image, app, url });
-        try {
-          const r = webpush.generateRequestDetails(
-            { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
-            payload,
-            { vapidDetails, TTL: 1800, urgency: "high" }, // llega de inmediato; si el teléfono está apagado más de 30 min, ya no sirve
-          );
-          const headers = { ...r.headers } as Record<string, string>;
-          delete headers["Content-Length"]; // fetch la calcula sola
-          const res = await fetch(r.endpoint, { method: r.method, headers, body: r.body });
-          if (res.status === 404 || res.status === 410) {
-            await db.from("suscripciones_push").delete().eq("id", s.id);
-            borrados++;
-          } else if (res.ok) {
-            enviados++;
-          } else {
-            fallidos++;
-            console.error("push", res.status, await res.text());
-          }
-        } catch (e) {
-          fallidos++;
-          console.error("push", e);
-        }
-      }
+      const n = await enviar(db, vapidDetails, aviso, (subs ?? []) as Sub[]);
+      enviados += n.enviados; borrados += n.borrados; fallidos += n.fallidos;
+      console.log("aviso", f.tipo, aviso.tag, JSON.stringify(n));
     }
   }
   return json(200, { enviados, borrados, fallidos });
