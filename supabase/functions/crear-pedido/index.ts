@@ -339,6 +339,8 @@ Deno.serve(async (req) => {
     comprobante_path: comprobante,
     comprobante_whatsapp: porWhatsapp,
     programado_para: programado ? programado.toISOString() : null,
+    // 30 s para que el cliente pueda cancelar; después llega al local (liberar_pedidos_retenidos).
+    retener_hasta: new Date(Date.now() + 30_000).toISOString(),
   }).select("*").single();
 
   if (error) {

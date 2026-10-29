@@ -1,7 +1,7 @@
 # Fase 1 · Conectar Porké No? a Supabase
 
 ## ✅ Lista de pendientes en Supabase (se actualiza en cada cambio)
-Última versión de la app: **0.12.4**. Haz solo lo que todavía no hayas hecho, en este orden:
+Última versión de la app: **0.13.0**. Haz solo lo que todavía no hayas hecho, en este orden:
 
 > Pendiente para más adelante: tarifas de delivery por zonas (hoy todo es $2.00, el mínimo; centro de Aguadulce y Pocrí = $2.00).
 
@@ -33,6 +33,8 @@
 | 24 | Función `enviar-push` | Edge Functions › enviar-push › Deploy | ✅ Ya publicada por Claude con el conector (0.12.2: "Preparando tu pedido" y aviso repetido al motorizado) |
 | 25 | SQL `13-cobro-del-motorizado.sql` | SQL Editor › Run | ✅ Ya aplicado por Claude con el conector (0.12.3) |
 | 26 | Función `enviar-push` | Edge Functions › enviar-push › Deploy | ✅ Ya publicada por Claude (0.12.3: aviso de prueba con la app cerrada) |
+| 27 | SQL `14-confirmar-y-cancelar-30s.sql` | SQL Editor › Run | ✅ Ya aplicado por Claude con el conector (0.13.0) |
+| 28 | Función `crear-pedido` | Edge Functions › crear-pedido › Deploy | ✅ Ya publicada por Claude (0.13.0: 30 s de espera para cancelar) |
 
 
 En esta rama `index.html` ya apunta al proyecto de Supabase de Porké No?. Si `SB_URL` y `SB_KEY` quedan vacías, la app funciona igual que el prototipo.
