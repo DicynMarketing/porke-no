@@ -8,6 +8,8 @@
   if(!v&&Math.max(screen.width,screen.height)>=812)document.documentElement.style.setProperty('--sab','26px')})}catch(e){}})();</script>
 <script>/* Mantener presionado no abre menús de Chrome (descargar/copiar/compartir imagen, abrir enlace); solo se permite en campos para escribir. */
 document.addEventListener('contextmenu',function(e){var t=e.target;if(!(t&&t.closest&&t.closest('input,textarea,select,[contenteditable]')))e.preventDefault()},true);
+// Sin zoom (pellizcar, doble toque o Ctrl+rueda): se comporta como una aplicación. El mapa conserva su propio zoom.
+(function(){var mapa=function(e){return e.target&&e.target.closest&&e.target.closest('.leaflet-container')};document.addEventListener('touchmove',function(e){if(e.touches&&e.touches.length>1&&!mapa(e))e.preventDefault()},{passive:false});['gesturestart','gesturechange'].forEach(function(n){document.addEventListener(n,function(e){if(!mapa(e))e.preventDefault()},{passive:false})});document.addEventListener('wheel',function(e){if(e.ctrlKey&&!mapa(e))e.preventDefault()},{passive:false})})();
 document.addEventListener('dragstart',function(e){e.preventDefault()},true);</script>
 <script>/* La app del equipo (/equipo/) guarda sus datos aparte de la app del cliente, aunque estén en el mismo teléfono. */
 (function(){try{var q=/[?&]app=(admin|driver|staff|equipo)/.test(location.search),pe=/^\/equipo(\/|$)/.test(location.pathname);
@@ -68,7 +70,7 @@ h2{font:400 28px 'Bebas Neue',Impact,sans-serif;color:#2ee59d;text-shadow:0 0 14
 .tips{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:6px 0 2px}.tips button{min-width:34px;height:34px;padding:0 8px;border-radius:17px;border:1px solid #3fe0a055;background:#1b1b1b;color:var(--ink);font:600 12.5px Barlow,sans-serif}.tips button.on{background:#3fe0a0;color:#0c0c0c;border-color:#3fe0a0}.tips input{width:74px;height:34px;padding:0 8px;border-radius:17px;font-size:14px!important}
 .cnr{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.cnr button{font:600 13.5px Barlow,sans-serif;border-radius:10px;border:1px solid #444;background:#1b1b1b;color:var(--ink);padding:8px 10px}.cnr button.on{background:#ff7a8a;color:#111;border-color:#ff7a8a}
 .cerr{margin:10px 14px 0;padding:14px;border-radius:14px;background:linear-gradient(135deg,#ff7a8a33,#ff7a8a11);border:1px solid #ff7a8a99;text-align:center}.cerr b{display:block;font:400 26px/1.1 'Bebas Neue',Impact,sans-serif;color:#ff9aa8}.cerr span{font-size:14px;color:#ffd6dc}
-body.app .frame.kdsw{max-width:none!important}.kds{min-height:100%;background:#0b0b0b}.kdh{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:10px;padding:10px 14px;background:#151515;border-bottom:3px solid var(--pink)}.kdh b{font:400 26px/1 'Bebas Neue',Impact,sans-serif;color:var(--pink)}.kdh small{color:var(--mute)}.kdh .sp{flex:1}.kdh button{font:600 14px Barlow,sans-serif;border-radius:10px;border:1px solid #444;background:#222;color:var(--ink);padding:8px 12px}
+html,body{touch-action:pan-x pan-y}body.app .frame.kdsw{max-width:none!important}.kds{min-height:100%;background:#0b0b0b}.kdh{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:10px;padding:10px 14px;background:#151515;border-bottom:3px solid var(--pink)}.kdh b{font:400 26px/1 'Bebas Neue',Impact,sans-serif;color:var(--pink)}.kdh small{color:var(--mute)}.kdh .sp{flex:1}.kdh button{font:600 14px Barlow,sans-serif;border-radius:10px;border:1px solid #444;background:#222;color:var(--ink);padding:8px 12px}
 .kds{height:100vh;height:100dvh;display:flex;flex-direction:column}.kdz{flex:1;min-height:0;display:flex;flex-direction:column}@media (orientation:landscape){.kdz{flex-direction:row}}
 .kzn{min-height:0;min-width:0;display:flex;flex-direction:column}.kza{flex:62 1 0}.kzb{flex:38 1 0;background:#111;border-top:3px solid #2a2a2a}@media (orientation:landscape){.kzb{border-top:0;border-left:3px solid #2a2a2a}}
 .kzn>h3{margin:0;padding:8px 14px 2px;font:400 22px/1.1 'Bebas Neue',Impact,sans-serif;letter-spacing:.5px;color:var(--mute);display:flex;gap:8px;align-items:baseline}.kzn>h3 small{font:600 13px Barlow,sans-serif}
@@ -97,11 +99,9 @@ button.dpay{display:block;width:100%;border:0;cursor:pointer;animation:rdpl2 1.4
 .cfl2{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px dashed #ffffff22;font-size:16px}.cfl2 em{font-style:normal;font-weight:700;color:#ffd1ea}.cfl2.sm{font-size:13px;color:var(--mute)}
 .cfm{margin:10px 0;color:var(--mute);font-size:14px;line-height:1.5}.cft{display:flex;justify-content:space-between;align-items:baseline;margin:6px 0 14px}.cft b{font:400 34px/1 'Bebas Neue',Impact,sans-serif;color:#7fffc4}
 .cfi .cfyes{width:100%}.cfi .cfno{width:100%;margin-top:8px;padding:12px}
-.snt{padding:4px 2px 6px}.snt h3{font-size:30px}.sncn{display:grid;grid-template-columns:auto 1fr;gap:12px 14px;align-items:center;margin:12px 0;padding:14px;border-radius:16px;background:#ff5fa214;border:1px solid #ff5fa255;transition:opacity .4s,transform .4s,max-height .45s;max-height:400px;overflow:hidden}
-.sncn.fue{opacity:0;transform:scale(.95);max-height:0;padding:0 14px;margin:0;border-width:0}
-.snrg{position:relative;width:64px;height:64px}.snrg svg{width:64px;height:64px;transform:rotate(-90deg)}.snrg circle{fill:none;stroke:#ffffff1f;stroke-width:6}.snrg #snar{stroke:#ff5fa2;stroke-linecap:round;stroke-dasharray:176;stroke-dashoffset:0;transition:stroke-dashoffset .25s linear}.snrg b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:400 28px 'Bebas Neue',Impact,sans-serif}
-.sntx{font-size:14px;line-height:1.45;color:#e9e9e9}.sntx>b:first-child{display:block;font-size:16px;margin-bottom:2px}.sncx{grid-column:1/-1;background:#2a2a2a!important;color:#ff7a8a!important;border:2px solid #ff7a8a!important}
-.snok{margin:12px 0;padding:14px;border-radius:16px;background:#3fe0a01a;border:1px solid #3fe0a066;font-size:16px;animation:cfpop .5s ease}.snok small{display:block;color:var(--mute);font-size:13px;margin-top:2px}
+.snt{padding:4px 2px 6px}.snt h3{font-size:30px}
+.sncx{display:block;width:100%;margin:12px 0 8px;padding:14px;border-radius:14px;background:transparent;border:1.5px solid #ff7a8a88;color:#ff8f9c;font:700 15px Barlow,sans-serif;transition:opacity .35s,max-height .4s,margin .4s,padding .4s;max-height:80px;overflow:hidden}.sncx small{font-weight:500;opacity:.7;margin-left:4px}.sncx.arm{background:#ff7a8a22;border-color:#ff7a8a}
+.sncx.fue{opacity:0;max-height:0;margin:0;padding:0 14px;border-width:0}
 .kdx{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.38);opacity:0;transition:opacity .3s}.kdx.on{opacity:1}
 .kdp{position:fixed;z-index:61;border-radius:10px 10px 22px 10px;background:var(--kc);color:#1a1a1a;box-shadow:0 20px 50px rgba(0,0,0,.6);overflow:hidden;transform-origin:0 0;transition:transform .38s cubic-bezier(.2,.85,.25,1)}.kdp.k-nv{--kc:#fff0a8}.kdp.k-pr{--kc:#d3f8df}.kdp.k-tarde{--kc:#ffcfae}.kdp.k-rl{--kc:#cfe9ff}.kdp.k-cm{--kc:#ffd6ea}.kdp.k-ok{--kc:#d6d6d6}
 .kpi{max-height:inherit;overflow:auto;padding:16px 18px 18px;opacity:0;transition:opacity .2s}.kdp.on .kpi{opacity:1;transition-delay:.15s}
@@ -731,20 +731,18 @@ var SNT=0;
 function sentOk(o){cart={};CONF='';SCHED=null;TIP=0;TIPO=0;fm.nt='';paint();badge();strip();clearInterval(SNT);
  var fin=o.hold?Date.parse(o.hold):Date.now()+30000,avisa=function(){o.ps=='rev'?nCustom('🔍',A('y_rev_t'),A('y_rev_b')):pushN(o)};
  open('<div class="snt"><h3>'+t('sent')+'</h3><p class="note">$'+fmt(o.t)+' · '+payl(o.pay)+(o.ps=='rev'?'. '+A('y_sent'):'')+'</p>'+
-  '<div class="sncn" id="sncn"><div class="snrg"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="28"/><circle id="snar" cx="32" cy="32" r="28"/></svg><b id="snn">30</b></div>'+
-  '<div class="sntx"><b>¿Te equivocaste?</b>Puedes cancelar sin costo durante <b id="snn2">30</b> segundos. Al terminar el tiempo, tu pedido queda confirmado, pasa directo a la cocina y ya no se podrá cancelar desde la app.</div>'+
-  '<button class="cta sncx" data-dx data-xl="Sí, cancelar mi pedido" data-a="ccan" data-id="'+o.id+'">Cancelar pedido</button></div>'+
-  '<div class="snok" id="snok" hidden>✅ <b>Pedido confirmado</b><small>Ya está en la cocina. ¡Gracias por tu pedido!</small></div>'+
   (o.email?'<p class="note">'+A('c_sent')+' <b>'+esc(o.email)+'</b></p>':'')+'<div class="eta">⏱ '+t('eta')+': '+etaTxt()+'</div>'+
+  '<button class="sncx" id="sncx" data-dx data-xl="Sí, cancelar" data-a="ccan" data-id="'+o.id+'">Cancelar pedido <small id="snn">30 s</small></button>'+
   '<button class="cta" data-a="track">'+t('follow')+'</button></div>');
- var tick=function(){var r=Math.max(0,Math.ceil((fin-Date.now())/1000)),a=$('snar'),n=$('snn'),n2=$('snn2');if(n)n.textContent=r;if(n2)n2.textContent=r;if(a)a.style.strokeDashoffset=String(176*(1-r/30));
-  if(r<=0){clearInterval(SNT);SNT=0;avisa();var c=$('sncn'),k=$('snok');if(c){c.classList.add('fue');setTimeout(function(){if(c.parentNode)c.remove()},450)}if(k)k.hidden=false}};
+ // El cliente puede cancelar durante 30 s; al terminar, el botón se va sin avisar nada.
+ var tick=function(){var r=Math.max(0,Math.ceil((fin-Date.now())/1000)),n=$('snn');if(n&&!$('sncx').classList.contains('arm'))n.textContent=r+' s';
+  if(r<=0){clearInterval(SNT);SNT=0;avisa();var c=$('sncx');if(c){c.classList.add('fue');setTimeout(function(){if(c.parentNode)c.remove()},400)}}};
  tick();SNT=setInterval(tick,250)}
 function ccan(b){var o=ord(b.dataset.id);if(!o)return;b.disabled=true;b.textContent='Cancelando…';
  var ok=function(){clearInterval(SNT);SNT=0;orders=orders.filter(function(x){return x.id!=o.id});badge();strip();paint();
   open('<div class="snt"><div class="an big"><div class="em" style="font-size:60px">🗑️</div></div><h3 class="ct">Pedido cancelado</h3><p class="note ct">No llegó a la cocina y no se preparará.</p>'+(o.pay!='cash'?'<p class="note ct">Si ya hiciste el '+payl(o.pay)+', escríbenos y te devolvemos el dinero.</p><a class="cta wa" target="_blank" rel="noopener" href="'+wam(o)+'">💬 Escribir por WhatsApp</a>':'')+'<button class="cta" data-a="close">Volver al menú</button></div>')};
  if(!(CLOUD&&SB)){ok();return}
- SB.rpc('cliente_cancelar',{p_pedido:o.id}).then(function(r){if(r.error)throw r.error;ok()}).catch(function(e){toast((e&&e.message)||'No se pudo cancelar');var c=$('sncn');if(c)c.remove();var k=$('snok');if(k)k.hidden=false})}
+ SB.rpc('cliente_cancelar',{p_pedido:o.id}).then(function(r){if(r.error)throw r.error;ok()}).catch(function(e){toast((e&&e.message)||'No se pudo cancelar');var c=$('sncx');if(c)c.remove()})}
 document.addEventListener('click',function(e){
  var mp=e.target.closest('#mp');if(mp){var r=mp.getBoundingClientRect(),px=Math.round((e.clientX-r.left)/r.width*340),py=Math.round((e.clientY-r.top)/r.height*240);if(edOn){edcap();ed.loc={x:px,y:py,gps:ed.loc&&ed.loc.gps||null};edSheet(ed.loc.gps?A('l_det'):'');return}loc={x:px,y:py,gps:loc&&loc.gps||null};mapSheet();return}
  var b=e.target.closest('[data-a]');if(!b)return;var a=b.dataset.a;
@@ -1082,7 +1080,7 @@ function drv(){var mine=orders.filter(function(o){return o.drv==cd&&o.s==2}),dn=
 var RDA=0,RDC=null;
 function rdTin(){try{RDC=RDC||new(window.AudioContext||window.webkitAudioContext)();if(RDC.state=='suspended')RDC.resume();[0,.28].forEach(function(t){var o=RDC.createOscillator(),g=RDC.createGain(),a=RDC.currentTime+t;o.type='sine';o.frequency.value=1320;g.gain.setValueAtTime(.0001,a);g.gain.exponentialRampToValueAtTime(.6,a+.01);g.gain.exponentialRampToValueAtTime(.0001,a+.24);o.connect(g);g.connect(RDC.destination);o.start(a);o.stop(a+.25)})}catch(e){}try{navigator.vibrate&&navigator.vibrate([250,120,250])}catch(e){}}
 function rdAlarm(on){if(on&&!RDA){rdTin();RDA=setInterval(function(){if(view!='r'){clearInterval(RDA);RDA=0;return}if(!document.hidden)rdTin()},2500)}else if(!on&&RDA){clearInterval(RDA);RDA=0}}
-var APPV='0.13.0',UPDSKIP='';
+var APPV='0.13.1',UPDSKIP='';
 // Pedidos en espera (el admin lo activa cuando hay muchos pedidos).
 function ev(n,x){try{if(window.posthog&&posthog.capture)posthog.capture(n,x||{})}catch(e){}}
 function enEspera(){return !!(SUC&&SUC.espera_hasta&&Date.parse(SUC.espera_hasta)>Date.now())}
