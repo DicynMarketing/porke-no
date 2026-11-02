@@ -1,1 +1,1 @@
-{"v": "0.13.7", "notes": ["Seguridad: los archivos internos ya no se pueden abrir desde internet", "Seguridad: la librería de conexión se verifica con un sello de integridad antes de usarse", "El panel del equipo no aparece en buscadores"]}
+{"v": "0.13.8", "notes": ["Mejoras para que la app funcione más rápido y mejor"], "cliente": []}

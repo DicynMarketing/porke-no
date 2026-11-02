@@ -834,7 +834,7 @@ document.addEventListener('click',function(e){
   var em=(user?user.email:(fm.em||'')).trim();var pm=paySel.indexOf('card:')==0?'cdc':paySel,cd0=paySel.indexOf('card:')==0?cards[+paySel.slice(5)]:null;
   var its=items(),dk=today(),o={note:(fm.nt||'').trim(),cafe:hasBk(its),id:++uid,day:dk,num:orders.filter(function(x){return x.day==dk}).length+1,time:new Date(),type:typ,name:fm.nm.trim(),phone:fm.ph.trim(),ref:fm.ad.trim(),loc:typ=='d'?loc:null,pay:pm,ps:pm=='cash'?'cod':'rev',proof:proofData,card:null,items:its,sub:itot(its)-dsct(),fee:fee(),svc:svc(),email:em,tip:tip(),t:itot(its)-dsct()+fee()+svc()+tip(),cup:cupLn(its)?CUP.id:null,sched:CLOUD?SCHED:null,s:0,drv:null,rate:0,tags:[]};if(CLOUD){cloudSend(o,b);return}phReg(o.phone,o.name);proofData=null;clearInterval(pTm);orders.unshift(o);sentOk(o);return}
  if(a=='fid'){fidOpen();return}
- if(a=='updchk'){b.disabled=true;fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){b.disabled=false;if(d&&d.v&&vnew(d.v,APPV)){shut();showUpd(d)}else toast('✅ '+['Ya tienes la última versión','You have the latest version','Você já tem a última versão'][li]+' ('+APPV+')')}).catch(function(){b.disabled=false;toast('Sin conexión. Intenta de nuevo.')});return}
+ if(a=='updchk'){b.disabled=true;fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){b.disabled=false;var u=updPara(d);if(u){shut();showUpd(u)}else toast('✅ '+['Ya tienes la última versión','You have the latest version','Você já tem a última versão'][li]+' ('+APPV+')')}).catch(function(){b.disabled=false;toast('Sin conexión. Intenta de nuevo.')});return}
  if(a=='cupt'){CUPON=!CUPON;payScreen();return}
  if(a=='venp'){VEN.p=b.dataset.p;admin();return}
  if(a=='atab'){admTab=b.dataset.t;if(admTab=='ven')VEN.t=0;admin();return}
@@ -1083,13 +1083,20 @@ function drv(){var mine=orders.filter(function(o){return o.drv==cd&&o.s==2}),dn=
 var RDA=0,RDC=null;
 function rdTin(){try{RDC=RDC||new(window.AudioContext||window.webkitAudioContext)();if(RDC.state=='suspended')RDC.resume();[0,.28].forEach(function(t){var o=RDC.createOscillator(),g=RDC.createGain(),a=RDC.currentTime+t;o.type='sine';o.frequency.value=1320;g.gain.setValueAtTime(.0001,a);g.gain.exponentialRampToValueAtTime(.6,a+.01);g.gain.exponentialRampToValueAtTime(.0001,a+.24);o.connect(g);g.connect(RDC.destination);o.start(a);o.stop(a+.25)})}catch(e){}try{navigator.vibrate&&navigator.vibrate([250,120,250])}catch(e){}}
 function rdAlarm(on){if(on&&!RDA){rdTin();RDA=setInterval(function(){if(view!='r'){clearInterval(RDA);RDA=0;return}if(!document.hidden)rdTin()},2500)}else if(!on&&RDA){clearInterval(RDA);RDA=0}}
-var APPV='0.13.7',UPDSKIP='';
+var APPV='0.13.8',UPDSKIP='';
 // Pedidos en espera (el admin lo activa cuando hay muchos pedidos).
 function ev(n,x){try{if(window.posthog&&posthog.capture)posthog.capture(n,x||{})}catch(e){}}
 function enEspera(){return !!(SUC&&SUC.espera_hasta&&Date.parse(SUC.espera_hasta)>Date.now())}
 function etaTxt(){if(!enEspera())return ETA;var m=+SUC.espera_min||20;return (20+m)+'–'+(25+m)+' min'}
 function espBan(){if(!enEspera())return'';return'<div class="esp">⏳ <b>Tenemos muchos pedidos en este momento.</b> Tu pedido se tomará en breve (unos '+(+SUC.espera_min||20)+' min más de lo normal).</div>'}
 function vnew(a,b){a=String(a).split('.');b=String(b).split('.');for(var i=0;i<4;i++){var x=+a[i]||0,y=+b[i]||0;if(x!=y)return x>y}return false}
+// Qué ve cada app al salir una versión nueva (version.json):
+//   "notes":   cambios del equipo (admin, cocina, cajero, motorizado): solo en la app del equipo.
+//   "cliente": cambios para el cliente: se muestran en las dos apps. Si es [] el cliente ve un
+//              mensaje general sin detalles; si no está, la app del cliente no avisa nada.
+function updPara(d){if(!d||!d.v||!vnew(d.v,APPV))return null;var c=d.cliente;
+ if(APPMODE){var L=(c||[]).concat(d.notes||[]);return{v:d.v,notes:L.length?L:['Mejoras y correcciones']}}
+ if(!c)return null;return{v:d.v,notes:c.length?c:['Mejoras para que la app funcione más rápido y mejor']}}
 function showUpd(d,demo){var e=$('upd');e.innerHTML='<b>🐷 Nueva versión '+esc(d.v)+' disponible</b><ul>'+(d.notes||[]).map(function(n){return'<li>'+esc(n)+'</li>'}).join('')+'</ul><div class="ub"><button class="no" data-a="updno">Después</button><button class="go" data-a="updgo"'+(demo?' data-demo="1"':'')+'>Actualizar ahora</button></div>';e.hidden=false;e.dataset.v=d.v}
 // Pantalla de actualización con el cerdito: cubre todo, la barra solo avanza, una sola recarga.
 var UPD={p:0,tick:0,fail:0,done:0,test:0,t0:0},RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
@@ -1121,7 +1128,7 @@ setTimeout(function(){try{new Image().src='assets/carga/cerdito-poster.png'}catc
 // Si se actualizó y aun así quedó una versión vieja (teléfono que se saltó varias), se limpia todo una vez y se abre la última.
 function updStuck(v){var to='',hd='';try{to=sessionStorage.getItem('pk_updto');hd=sessionStorage.getItem('pk_hard')}catch(e){}if(to!=v||hd==v)return false;try{sessionStorage.setItem('pk_hard',v);sessionStorage.setItem('pk_upd','1')}catch(e){}
  updClean().then(function(){location.reload()});return true}
-function chkUpd(){if(location.protocol=='file:'||!navigator.onLine)return;try{if(window.SWREG)window.SWREG.update().catch(function(){})}catch(e){}try{fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.v&&vnew(d.v,APPV)&&UPDSKIP!=d.v){if(updStuck(d.v))return;showUpd(d)}}).catch(function(){})}catch(e){}}
+function chkUpd(){if(location.protocol=='file:'||!navigator.onLine)return;try{if(window.SWREG)window.SWREG.update().catch(function(){})}catch(e){}try{fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(d){var u=updPara(d);if(u&&UPDSKIP!=u.v){if(updStuck(u.v))return;showUpd(u)}}).catch(function(){})}catch(e){}}
 setTimeout(chkUpd,4500);setInterval(chkUpd,1800000);document.addEventListener('visibilitychange',function(){if(!document.hidden)chkUpd()});
 var DEMO=/demo/.test(location.hash),ROLE='client',PINS={owner:'2468',driver:'1357'};
 try{ROLE=localStorage.getItem('pk_role')||'client';var _p=JSON.parse(localStorage.getItem('pk_pins')||'null');if(_p&&_p.owner&&_p.driver)PINS=_p}catch(e){}

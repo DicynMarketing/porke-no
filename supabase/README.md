@@ -1,7 +1,9 @@
 # Fase 1 · Conectar Porké No? a Supabase
 
 ## ✅ Lista de pendientes en Supabase (se actualiza en cada cambio)
-Última versión de la app: **0.13.7**. Haz solo lo que todavía no hayas hecho, en este orden:
+Última versión de la app: **0.13.8**. Haz solo lo que todavía no hayas hecho, en este orden:
+
+> **Avisos de versión (`version.json`):** `notes` = cambios del equipo (solo los ve la app del equipo). `cliente` = cambios para el cliente (se ven en las dos apps). Si `cliente` es `[]`, el cliente ve un mensaje general sin detalles; si no está, la app del cliente no avisa.
 
 > Pendiente para más adelante: tarifas de delivery por zonas (hoy todo es $2.00, el mínimo; centro de Aguadulce y Pocrí = $2.00).
 
