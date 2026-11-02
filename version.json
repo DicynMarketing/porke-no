@@ -1,1 +1,1 @@
-{"v": "0.13.6", "notes": ["Cocina: al abrir un pedido se ve el nombre y el teléfono del cliente, con botones para llamar o escribir por WhatsApp (sin correo)"]}
+{"v": "0.13.7", "notes": ["Seguridad: los archivos internos ya no se pueden abrir desde internet", "Seguridad: la librería de conexión se verifica con un sello de integridad antes de usarse", "El panel del equipo no aparece en buscadores"]}

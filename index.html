@@ -1083,7 +1083,7 @@ function drv(){var mine=orders.filter(function(o){return o.drv==cd&&o.s==2}),dn=
 var RDA=0,RDC=null;
 function rdTin(){try{RDC=RDC||new(window.AudioContext||window.webkitAudioContext)();if(RDC.state=='suspended')RDC.resume();[0,.28].forEach(function(t){var o=RDC.createOscillator(),g=RDC.createGain(),a=RDC.currentTime+t;o.type='sine';o.frequency.value=1320;g.gain.setValueAtTime(.0001,a);g.gain.exponentialRampToValueAtTime(.6,a+.01);g.gain.exponentialRampToValueAtTime(.0001,a+.24);o.connect(g);g.connect(RDC.destination);o.start(a);o.stop(a+.25)})}catch(e){}try{navigator.vibrate&&navigator.vibrate([250,120,250])}catch(e){}}
 function rdAlarm(on){if(on&&!RDA){rdTin();RDA=setInterval(function(){if(view!='r'){clearInterval(RDA);RDA=0;return}if(!document.hidden)rdTin()},2500)}else if(!on&&RDA){clearInterval(RDA);RDA=0}}
-var APPV='0.13.6',UPDSKIP='';
+var APPV='0.13.7',UPDSKIP='';
 // Pedidos en espera (el admin lo activa cuando hay muchos pedidos).
 function ev(n,x){try{if(window.posthog&&posthog.capture)posthog.capture(n,x||{})}catch(e){}}
 function enEspera(){return !!(SUC&&SUC.espera_hasta&&Date.parse(SUC.espera_hasta)>Date.now())}
@@ -1284,7 +1284,7 @@ function cSheet(msg){var tot=0;Object.keys(CED.items).forEach(function(k){var p=
 // ---- Nube (Supabase) · fase 1: pedidos en tiempo real. Sin SB_URL/SB_KEY no hace nada. ----
 var SB=null,SBP=null,SBR=null,SBL=0,SUC=null,ME=null,EQ=null,DRVID={},EST=['recibido','preparando','en_camino','entregado'],SECC={ff:'comida_rapida',bk:'desayunos'};
 var PAYDB={yappy:'yappy',transfer:'transferencia',cash:'efectivo'},PAYAPP={yappy:'yappy',transferencia:'transfer',efectivo:'cash'},PSAPP={por_cobrar:'cod',en_revision:'rev',verificado:'ok',rechazado:'bad'};
-function sbLoad(){if(SBP)return SBP;SBP=new Promise(function(ok,ko){var x=document.createElement('script');x.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js';
+function sbLoad(){if(SBP)return SBP;SBP=new Promise(function(ok,ko){var x=document.createElement('script');x.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js';x.integrity='sha384-BWcjm9OdFth9TbhCxZPdm+gAOUMAzQy9nmTs12ioXdCcbVnJaPMn+fMUoQCLt60R';x.crossOrigin='anonymous';
  x.onload=function(){SB=window.supabase.createClient(SB_URL,SB_KEY,{auth:{storageKey:APPMODE?'pk_sb_equipo':'pk_sb_cliente',persistSession:true,autoRefreshToken:true,flowType:'pkce',detectSessionInUrl:!APPMODE}});ok(SB)};x.onerror=function(){SBP=null;ko(new Error('sin conexión'))};document.head.appendChild(x)});return SBP}
 var MENUT=0;
 function sbMenuApply(m){if(!m||!m.suc)return;var c=m.suc;PROMOT=c.promo_prueba_hasta?Date.parse(c.promo_prueba_hasta):0;FEE=+c.tarifa_entrega;SVC=+c.cargo_servicio;if(c.yappy)YAP=c.yappy;var bk=c.banco||{};if(bk.cuenta){BANKN=String(bk.cuenta).replace(/\D/g,'');BANK=[bk.banco||'',(bk.tipo||'Cuenta')+' '+bk.cuenta,'A nombre de: '+(bk.titular||'')]}

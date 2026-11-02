@@ -1,3 +1,11 @@
 # App del equipo (administrador y motorizado) en su propia dirección, separada de la app del cliente.
 /equipo  /equipo/  301
 /equipo/*  /:splat  200
+# Archivos internos (instrucciones, código del servidor, herramientas): no se publican.
+/supabase  /  301
+/supabase/*  /  301
+/herramientas  /  301
+/herramientas/*  /  301
+/.github/*  /  301
+/PLAN.md  /  301
+/README.md  /  301
