@@ -38,6 +38,7 @@
 | 29 | Sentry (aviso de errores) | — | ✅ Conectado en la app y en crear-pedido y enviar-push (0.13.2). Organización dicyn-marketing, proyecto porke-no |
 | 30 | PostHog (estadísticas) | — | ✅ Conectado en la app del cliente (0.13.3), anónimo y sin grabación de pantalla. Proyecto 705519 |
 | 31 | SQL `15-seguridad.sql` | SQL Editor › Run | ✅ Ya aplicado por Claude con el conector (0.13.5) |
+| 32 | SQL `16-validaciones.sql` | SQL Editor › Run | ✅ Ya aplicado por Claude con el conector |
 
 
 En esta rama `index.html` ya apunta al proyecto de Supabase de Porké No?. Si `SB_URL` y `SB_KEY` quedan vacías, la app funciona igual que el prototipo.
