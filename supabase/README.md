@@ -1,7 +1,7 @@
 # Fase 1 · Conectar Porké No? a Supabase
 
 ## ✅ Lista de pendientes en Supabase (se actualiza en cada cambio)
-Última versión de la app: **0.13.4**. Haz solo lo que todavía no hayas hecho, en este orden:
+Última versión de la app: **0.13.5**. Haz solo lo que todavía no hayas hecho, en este orden:
 
 > Pendiente para más adelante: tarifas de delivery por zonas (hoy todo es $2.00, el mínimo; centro de Aguadulce y Pocrí = $2.00).
 
@@ -37,6 +37,7 @@
 | 28 | Función `crear-pedido` | Edge Functions › crear-pedido › Deploy | ✅ Ya publicada por Claude (0.13.0: 30 s de espera para cancelar) |
 | 29 | Sentry (aviso de errores) | — | ✅ Conectado en la app y en crear-pedido y enviar-push (0.13.2). Organización dicyn-marketing, proyecto porke-no |
 | 30 | PostHog (estadísticas) | — | ✅ Conectado en la app del cliente (0.13.3), anónimo y sin grabación de pantalla. Proyecto 705519 |
+| 31 | SQL `15-seguridad.sql` | SQL Editor › Run | ✅ Ya aplicado por Claude con el conector (0.13.5) |
 
 
 En esta rama `index.html` ya apunta al proyecto de Supabase de Porké No?. Si `SB_URL` y `SB_KEY` quedan vacías, la app funciona igual que el prototipo.

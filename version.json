@@ -1,1 +1,1 @@
-{"v": "0.13.4", "notes": ["Motorizado: botón amarillo grande \"YA LO VI\" para apagar la alarma, también fijo abajo de la pantalla mientras suena"]}
+{"v": "0.13.5", "notes": ["Seguridad: cabeceras que impiden meter la app en otra página y bloquean programas de sitios desconocidos", "Seguridad: el cliente solo puede cambiar su nombre, teléfono y avisos; límite a las solicitudes de acceso del equipo"]}
