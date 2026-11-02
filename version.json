@@ -1,1 +1,1 @@
-{"v": "0.13.1", "notes": ["Pedido enviado: \"Cancelar pedido\" es un botón discreto con el conteo pequeño; al terminar el tiempo se quita sin avisos", "La app ya no se puede ampliar con zoom (como una aplicación normal)"]}
+{"v": "0.13.2", "notes": ["Aviso de errores activado (Sentry): si la app o el servidor fallan, llega un correo con el detalle técnico, sin datos de los clientes", "Política de Privacidad: se explica el registro de fallas técnicas y las estadísticas anónimas"]}

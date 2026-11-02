@@ -34,6 +34,27 @@ function json(status: number, body: unknown) {
 }
 const fallo = (status: number, error: string) => json(status, { error });
 
+// Aviso de errores a Sentry (solo el error técnico, sin datos de clientes).
+const SENTRY_DSN = Deno.env.get("SENTRY_DSN") ??
+  "https://d58450d2dc4e6989164ffc7a2577e461@o4512363723751424.ingest.us.sentry.io/4512363766480896";
+async function avisarError(fn: string, err: unknown, extra: Record<string, unknown> = {}) {
+  try {
+    const u = new URL(SENTRY_DSN);
+    const id = crypto.randomUUID().replace(/-/g, "");
+    const e = err as { name?: string; message?: string; stack?: string; code?: string };
+    const ev = {
+      event_id: id, timestamp: Date.now() / 1000, platform: "javascript", level: "error",
+      environment: "servidor", server_name: fn, tags: { funcion: fn },
+      exception: { values: [{ type: e?.name || e?.code || "Error", value: String(e?.message ?? err).slice(0, 500) }] },
+      extra: { ...extra, stack: e?.stack?.slice(0, 2000) },
+    };
+    const body = JSON.stringify({ event_id: id, sent_at: new Date().toISOString() }) + "\n" +
+      JSON.stringify({ type: "event" }) + "\n" + JSON.stringify(ev);
+    await fetch(`${u.protocol}//${u.host}/api${u.pathname}/envelope/?sentry_key=${u.username}&sentry_version=7`,
+      { method: "POST", body });
+  } catch { /* si Sentry no responde, no afecta el pedido */ }
+}
+
 function claveSecreta() {
   try {
     const k = JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") ?? "{}");
@@ -80,6 +101,15 @@ const hora12 = (t: string) => {
 };
 
 Deno.serve(async (req) => {
+  try {
+    return await atender(req);
+  } catch (e) {
+    await avisarError("crear-pedido", e);
+    return fallo(500, "No se pudo guardar el pedido. Intenta de nuevo.");
+  }
+});
+
+async function atender(req: Request): Promise<Response> {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return fallo(405, "Método no permitido.");
 
@@ -346,8 +376,9 @@ Deno.serve(async (req) => {
   if (error) {
     if (cupon) await db.from("cupones").update({ estado: "disponible", usado_en: null }).eq("id", cupon);
     console.error("crear-pedido", error);
+    await avisarError("crear-pedido", error, { paso: "guardar pedido" });
     return fallo(500, "No se pudo guardar el pedido. Intenta de nuevo.");
   }
   if (cupon) await db.from("cupones").update({ pedido_id: pedido.id }).eq("id", cupon);
   return json(200, { pedido });
-});
+}

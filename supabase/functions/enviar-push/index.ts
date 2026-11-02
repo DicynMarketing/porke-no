@@ -25,6 +25,27 @@ const json = (status: number, body: unknown) =>
 
 const VIEJO_MS = 30 * 60 * 1000; // un aviso de hace más de 30 min ya no sirve
 
+// Aviso de errores a Sentry (solo el error técnico, sin datos de clientes).
+const SENTRY_DSN = Deno.env.get("SENTRY_DSN") ??
+  "https://d58450d2dc4e6989164ffc7a2577e461@o4512363723751424.ingest.us.sentry.io/4512363766480896";
+async function avisarError(fn: string, err: unknown, extra: Record<string, unknown> = {}) {
+  try {
+    const u = new URL(SENTRY_DSN);
+    const id = crypto.randomUUID().replace(/-/g, "");
+    const e = err as { name?: string; message?: string; stack?: string; code?: string };
+    const ev = {
+      event_id: id, timestamp: Date.now() / 1000, platform: "javascript", level: "error",
+      environment: "servidor", server_name: fn, tags: { funcion: fn },
+      exception: { values: [{ type: e?.name || e?.code || "Error", value: String(e?.message ?? err).slice(0, 500) }] },
+      extra: { ...extra, stack: e?.stack?.slice(0, 2000) },
+    };
+    const body = JSON.stringify({ event_id: id, sent_at: new Date().toISOString() }) + "\n" +
+      JSON.stringify({ type: "event" }) + "\n" + JSON.stringify(ev);
+    await fetch(`${u.protocol}//${u.host}/api${u.pathname}/envelope/?sentry_key=${u.username}&sentry_version=7`,
+      { method: "POST", body });
+  } catch { /* si Sentry no responde, no afecta el pedido */ }
+}
+
 function claveSecreta() {
   try {
     const k = JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") ?? "{}");
@@ -157,11 +178,14 @@ async function enviar(db: any, vapidDetails: any, aviso: Aviso, subs: Sub[]) {
         n.enviados++;
       } else {
         n.fallidos++;
-        console.error("push", res.status, await res.text());
+        const txt = await res.text();
+        console.error("push", res.status, txt);
+        await avisarError("enviar-push", new Error(`El servicio de avisos respondió ${res.status}`), { respuesta: txt.slice(0, 300), tipo: aviso.tag.split("-")[0] });
       }
     } catch (e) {
       n.fallidos++;
       console.error("push", e);
+      await avisarError("enviar-push", e, { tipo: aviso.tag.split("-")[0] });
     }
   }
   return n;
@@ -209,6 +233,7 @@ Deno.serve(async (req) => {
     const { data: filas, error } = await db.rpc("tomar_push_pendientes", { p_max: 50 });
     if (error) {
       console.error("tomar_push_pendientes", error);
+      await avisarError("enviar-push", error, { paso: "leer la cola" });
       return json(500, { error: "No se pudo leer la cola de avisos." });
     }
     if (!filas?.length) break;
