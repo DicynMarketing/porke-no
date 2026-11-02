@@ -330,7 +330,7 @@ body.app .top{display:none}
 <script>
 // Supabase: URL del proyecto y clave pública (publishable/anon). Vacías = modo prototipo, todo queda en el teléfono.
 // Estadísticas de uso (PostHog): pega aquí la clave pública del proyecto (empieza con phc_). Vacía = apagado.
-var POSTHOG_KEY='',POSTHOG_HOST='https://us.i.posthog.com';
+var POSTHOG_KEY='phc_mBcRn6yhtwXVc8PyS5gx9jkYfZGBoV6T25uDLDHVHUZa',POSTHOG_HOST='https://us.i.posthog.com';
 // Aviso de errores (Sentry): pega aquí la DSN del proyecto (es pública). Vacía = apagado.
 var SENTRY_DSN='https://d58450d2dc4e6989164ffc7a2577e461@o4512363723751424.ingest.us.sentry.io/4512363766480896';
 var SB_URL='https://dgfdkcphklmeqlvyzmpu.supabase.co',SB_KEY='sb_publishable_Z5SXOxGxrfTSiMYAR18Qcg_NB8j6ciu',SB_SUC='aguadulce',CLOUD=!!(SB_URL&&SB_KEY);
@@ -646,7 +646,7 @@ function cfOpen(){var c=$('cfc');if(!c||CFO)return;var x=document.createElement(
 function cfClose(fn){if(!CFO){if(fn)fn();return}var k=CFO;CFO=null;var c=$('cfc');k.x.classList.remove('on');k.p.classList.remove('on');
  var done=function(){k.x.remove();k.p.remove();var c2=$('cfc');if(c2)c2.style.visibility='';if(fn)fn()};
  if(!c){done();return}var r=c.getBoundingClientRect(),q=k.p.getBoundingClientRect();k.p.style.transform='translate('+(r.left-q.left)+'px,'+(r.top-q.top)+'px) scale('+r.width/q.width+','+r.height/q.height+')';setTimeout(done,400)}
-function cfConfirm(){CONF=cfSig();var c=$('cfc');if(c){var d=document.createElement('div');d.innerHTML=cfCard();var n=d.firstChild;n.style.visibility='hidden';n.classList.add('pop');c.parentNode.replaceChild(n,c);n.parentNode.insertBefore(d.lastChild,n.nextSibling)}
+function cfConfirm(){CONF=cfSig();ev('confirmar_pedido');var c=$('cfc');if(c){var d=document.createElement('div');d.innerHTML=cfCard();var n=d.firstChild;n.style.visibility='hidden';n.classList.add('pop');c.parentNode.replaceChild(n,c);n.parentNode.insertBefore(d.lastChild,n.nextSibling)}
  cfClose(function(){var b=$('cfsend');if(b){b.disabled=false;b.classList.remove('cflk');b.classList.add('cfgo')}var h=$('cfh');if(h)h.remove()})}
 function payScreen(msg){var its=items();if(!its.length){shut();return}var dc=dsct(),sub=itot(its),fe=fee(),sl=paySlides();if(!sl.some(function(x){return x.k==paySel}))paySel='yappy';
  var h='<button class="bk" data-a="payback">'+A('p_back')+'</button><h3>'+A('p_t')+'</h3><div class="ch2 pm">'+A('p_how')+'<small>'+A('p_sw')+'</small></div><div class="pcar" id="pc">'+sl.map(function(x){var cl,inn;
@@ -739,7 +739,7 @@ function sentOk(o){cart={};CONF='';SCHED=null;TIP=0;TIPO=0;fm.nt='';paint();badg
   if(r<=0){clearInterval(SNT);SNT=0;avisa();var c=$('sncx');if(c){c.classList.add('fue');setTimeout(function(){if(c.parentNode)c.remove()},400)}}};
  tick();SNT=setInterval(tick,250)}
 function ccan(b){var o=ord(b.dataset.id);if(!o)return;b.disabled=true;b.textContent='Cancelando…';
- var ok=function(){clearInterval(SNT);SNT=0;orders=orders.filter(function(x){return x.id!=o.id});badge();strip();paint();
+ var ok=function(){clearInterval(SNT);SNT=0;ev('pedido_cancelado_cliente',{pago:PAYDB[o.pay]||o.pay});orders=orders.filter(function(x){return x.id!=o.id});badge();strip();paint();
   open('<div class="snt"><div class="an big"><div class="em" style="font-size:60px">🗑️</div></div><h3 class="ct">Pedido cancelado</h3><p class="note ct">No llegó a la cocina y no se preparará.</p>'+(o.pay!='cash'?'<p class="note ct">Si ya hiciste el '+payl(o.pay)+', escríbenos y te devolvemos el dinero.</p><a class="cta wa" target="_blank" rel="noopener" href="'+wam(o)+'">💬 Escribir por WhatsApp</a>':'')+'<button class="cta" data-a="close">Volver al menú</button></div>')};
  if(!(CLOUD&&SB)){ok();return}
  SB.rpc('cliente_cancelar',{p_pedido:o.id}).then(function(r){if(r.error)throw r.error;ok()}).catch(function(e){toast((e&&e.message)||'No se pudo cancelar');var c=$('sncx');if(c)c.remove()})}
@@ -1080,7 +1080,7 @@ function drv(){var mine=orders.filter(function(o){return o.drv==cd&&o.s==2}),dn=
 var RDA=0,RDC=null;
 function rdTin(){try{RDC=RDC||new(window.AudioContext||window.webkitAudioContext)();if(RDC.state=='suspended')RDC.resume();[0,.28].forEach(function(t){var o=RDC.createOscillator(),g=RDC.createGain(),a=RDC.currentTime+t;o.type='sine';o.frequency.value=1320;g.gain.setValueAtTime(.0001,a);g.gain.exponentialRampToValueAtTime(.6,a+.01);g.gain.exponentialRampToValueAtTime(.0001,a+.24);o.connect(g);g.connect(RDC.destination);o.start(a);o.stop(a+.25)})}catch(e){}try{navigator.vibrate&&navigator.vibrate([250,120,250])}catch(e){}}
 function rdAlarm(on){if(on&&!RDA){rdTin();RDA=setInterval(function(){if(view!='r'){clearInterval(RDA);RDA=0;return}if(!document.hidden)rdTin()},2500)}else if(!on&&RDA){clearInterval(RDA);RDA=0}}
-var APPV='0.13.2',UPDSKIP='';
+var APPV='0.13.3',UPDSKIP='';
 // Pedidos en espera (el admin lo activa cuando hay muchos pedidos).
 function ev(n,x){try{if(window.posthog&&posthog.capture)posthog.capture(n,x||{})}catch(e){}}
 function enEspera(){return !!(SUC&&SUC.espera_hasta&&Date.parse(SUC.espera_hasta)>Date.now())}

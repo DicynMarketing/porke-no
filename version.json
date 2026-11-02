@@ -1,1 +1,1 @@
-{"v": "0.13.2", "notes": ["Aviso de errores activado (Sentry): si la app o el servidor fallan, llega un correo con el detalle técnico, sin datos de los clientes", "Política de Privacidad: se explica el registro de fallas técnicas y las estadísticas anónimas"]}
+{"v": "0.13.3", "notes": ["Estadísticas de uso activadas (PostHog): visitas, productos agregados, pedidos confirmados, enviados y cancelados, de forma anónima y sin grabar la pantalla"]}
