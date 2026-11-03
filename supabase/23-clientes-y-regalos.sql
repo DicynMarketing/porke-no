@@ -48,8 +48,8 @@ begin
   if not public.es_admin(p_sucursal) then raise exception 'Sin permiso'; end if;
   return query
   select p.cliente_id,
-         (array_agg(p.nombre order by p.creado_en desc))[1],
-         (array_agg(p.telefono order by p.creado_en desc))[1],
+         (array_agg(p.nombre order by p.creado_en desc))[1]::text,
+         (array_agg(p.telefono order by p.creado_en desc))[1]::text,
          count(*)::integer, coalesce(sum(p.subtotal), 0)::numeric,
          min(p.creado_en), max(p.creado_en),
          (count(*) filter (where p.creado_en > now() - interval '60 days'))::integer,
@@ -57,7 +57,7 @@ begin
            where g.cliente_id = p.cliente_id and g.sucursal_id = p_sucursal and g.estado = 'disponible' and g.vence_en > now())
     from public.pedidos p
    where p.sucursal_id = p_sucursal and p.cliente_id is not null
-     and p.estado <> 'cancelado' and coalesce(p.estado_pago, '') <> 'rechazado'
+     and p.estado::text <> 'cancelado' and p.estado_pago::text is distinct from 'rechazado'
    group by p.cliente_id
    order by count(*) desc, max(p.creado_en) desc
    limit 2000;
