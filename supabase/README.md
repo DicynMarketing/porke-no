@@ -1,7 +1,7 @@
 # Fase 1 · Conectar Porké No? a Supabase
 
 ## ✅ Lista de pendientes en Supabase (se actualiza en cada cambio)
-Última versión de la app: **0.15.0**. Haz solo lo que todavía no hayas hecho, en este orden:
+Última versión de la app: **0.15.1**. Haz solo lo que todavía no hayas hecho, en este orden:
 
 > **Avisos de versión (`version.json`):** `notes` = cambios del equipo (solo los ve la app del equipo). `cliente` = cambios para el cliente (se ven en las dos apps). Si `cliente` es `[]`, el cliente ve un mensaje general sin detalles; si no está, la app del cliente no avisa.
 
