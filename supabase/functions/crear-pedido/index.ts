@@ -144,10 +144,19 @@ async function atender(req: Request): Promise<Response> {
   const correo = user.email; // el comprobante va al correo de la cuenta de Google
   const nota = texto(b.nota, 300) || null;
   const referencia = texto(b.referencia, 200) || null;
+  // Pedido para otra persona: nombre y teléfono de quien recibe.
+  const recibeNombre = texto(b.recibe_nombre, 60) || null;
+  let recTel = String(b.recibe_telefono ?? "").replace(/\D/g, "");
+  if (recTel.length === 11 && recTel.startsWith("507")) recTel = recTel.slice(3);
+  if (recibeNombre && recTel.length !== 8) return fallo(400, "Escribe el teléfono de quien recibe (8 dígitos).");
+  const recibeTelefono = recibeNombre ? `${recTel.slice(0, 4)}-${recTel.slice(4)}` : null;
 
   // --- Sucursal ---
   const { data: suc } = await db.from("sucursales").select("*").eq("id", b.sucursal).eq("activa", true).maybeSingle();
   if (!suc) return fallo(404, "Este local no está recibiendo pedidos.");
+  // Clientes bloqueados por el local (por cuenta o por teléfono).
+  const { data: bloq } = await db.rpc("esta_bloqueado", { p_sucursal: suc.id, p_cliente: user.id, p_telefono: telefono });
+  if (bloq === true) return fallo(403, "No puedes hacer pedidos en este momento. Comunícate con el local por WhatsApp.");
 
   // --- Método de pago ---
   const metodo = String(b.metodo_pago ?? "");
@@ -327,6 +336,16 @@ async function atender(req: Request): Promise<Response> {
     cupon = cp.id;
   }
 
+  // --- Código de descuento (ej. PORKE10): se revisa y se calcula aquí ---
+  let codigo: { id: number; codigo: string; descuento: number } | null = null;
+  if (typeof b.codigo === "string" && b.codigo.trim()) {
+    if (cupon) return fallo(400, "Usa el cupón de tu tarjeta de sellos o un código, no los dos a la vez.");
+    const { data: rc } = await db.rpc("revisar_codigo", { p_sucursal: suc.id, p_codigo: b.codigo, p_subtotal: subtotal / 100, p_cliente: user.id });
+    if (!rc?.ok) return fallo(409, rc?.mensaje ?? "Ese código no es válido.");
+    codigo = { id: rc.id, codigo: rc.codigo, descuento: centavos(rc.descuento) };
+    subtotal -= codigo.descuento;
+  }
+
   // --- Freno a pedidos repetidos o de broma ---
   const hace10 = new Date(Date.now() - 10 * 60 * 1000).toISOString();
   const { count } = await db.from("pedidos").select("id", { count: "exact", head: true })
@@ -347,6 +366,17 @@ async function atender(req: Request): Promise<Response> {
     const { data: ok } = await db.from("cupones").update({ estado: "usado", usado_en: new Date().toISOString() })
       .eq("id", cupon).eq("estado", "disponible").select("id");
     if (!ok?.length) return fallo(409, "Tu cupón ya no está disponible. Revisa tu pedido.");
+  }
+
+  // El código se aparta antes de guardar (si se agotó en ese instante, no se aplica).
+  let usoCodigo: number | null = null;
+  if (codigo) {
+    const { data: u } = await db.rpc("apartar_codigo", { p_codigo: codigo.id, p_cliente: user.id });
+    if (!u) {
+      if (cupon) await db.from("cupones").update({ estado: "disponible", usado_en: null }).eq("id", cupon);
+      return fallo(409, "Ese código se acaba de agotar. Revisa tu pedido.");
+    }
+    usoCodigo = u as number;
   }
 
   await db.from("clientes").upsert({ id: user.id, nombre, celular: telefono, correo }, { onConflict: "id" });
@@ -371,14 +401,18 @@ async function atender(req: Request): Promise<Response> {
     programado_para: programado ? programado.toISOString() : null,
     // 30 s para que el cliente pueda cancelar; después llega al local (liberar_pedidos_retenidos).
     retener_hasta: new Date(Date.now() + 30_000).toISOString(),
+    recibe_nombre: recibeNombre, recibe_telefono: recibeTelefono,
+    descuento: codigo ? codigo.descuento / 100 : 0, codigo: codigo?.codigo ?? null,
   }).select("*").single();
 
   if (error) {
     if (cupon) await db.from("cupones").update({ estado: "disponible", usado_en: null }).eq("id", cupon);
+    if (usoCodigo) await db.rpc("soltar_codigo", { p_uso: usoCodigo });
     console.error("crear-pedido", error);
     await avisarError("crear-pedido", error, { paso: "guardar pedido" });
     return fallo(500, "No se pudo guardar el pedido. Intenta de nuevo.");
   }
   if (cupon) await db.from("cupones").update({ pedido_id: pedido.id }).eq("id", cupon);
+  if (usoCodigo) await db.from("codigo_usos").update({ pedido_id: pedido.id }).eq("id", usoCodigo);
   return json(200, { pedido });
 }

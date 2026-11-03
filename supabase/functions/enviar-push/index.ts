@@ -129,6 +129,10 @@ async function armar(db: any, f: Fila): Promise<Aviso | null> {
   }
   if (!p.cliente_id) return null;
   const cliente = { usuarios: [p.cliente_id], app: "cliente" as const, hash: "pedido" };
+  if (f.tipo === "llegada") {
+    return { ...cliente, tag: `pedido-${p.id}-llegada`, image: IMG("en_camino"),
+      title: "🛵 ¡Tu pedido llegó!", body: `Pedido #${p.numero} · El repartidor está afuera. Sal a recibirlo 🐷` };
+  }
   if (f.tipo === "pago") {
     const tagPago = `pedido-${p.id}-pago-${f.datos.estado_pago}`;
     return f.datos.estado_pago === "verificado"

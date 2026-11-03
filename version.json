@@ -1,1 +1,1 @@
-{"v": "0.13.8", "notes": ["Mejoras para que la app funcione más rápido y mejor"], "cliente": []}
+{"v": "0.14.0", "cliente": ["❤️ Guarda tus productos favoritos con el corazón", "🎁 Ahora puedes pedir para otra persona", "🏷️ Usa códigos de descuento al pagar", "🛵 Te avisamos cuando el repartidor llega a tu casa"], "notes": ["Motorizado: botón LLEGUÉ que avisa al cliente", "Admin: bloquear clientes problemáticos y crear códigos de descuento", "Cocina: temporizador en cada pedido con tiempo meta"]}
