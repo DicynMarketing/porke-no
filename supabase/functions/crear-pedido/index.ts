@@ -219,6 +219,11 @@ async function atender(req: Request): Promise<Response> {
   const { data: hrs } = await db.from("horarios").select("seccion, activo, apertura, cierre")
     .eq("sucursal_id", suc.id).eq("dia_semana", t.dia);
   const horario = new Map((hrs ?? []).map((h) => [h.seccion, h]));
+  // Feriado con horario especial: ese día todas las secciones abren y cierran a la hora que puso el admin.
+  const esp = ((suc.horario_especial ?? {}) as Record<string, { a?: string; b?: string }>)[t.fecha];
+  if (esp && /^\d{2}:\d{2}$/.test(esp.a ?? "") && /^\d{2}:\d{2}$/.test(esp.b ?? "")) {
+    for (const k of ["desayunos", "comida_rapida"]) horario.set(k, { seccion: k, activo: true, apertura: esp.a!, cierre: esp.b! });
+  }
 
   // Promociones: solo valen los días elegidos (o durante la prueba de 30 min del admin).
   const prueba = !!suc.promo_prueba_hasta && new Date(suc.promo_prueba_hasta).getTime() > Date.now();
@@ -238,7 +243,7 @@ async function atender(req: Request): Promise<Response> {
     if ((!h || !abierto(h, t.minuto)) && !(hd && abierto(hd, t.minuto))) {
       const sec = SECCION[p.seccion] ?? p.seccion;
       if (programado) return `${sec} está cerrado a la hora que elegiste. Elige otra hora.`;
-      return h?.activo ? `${sec} está cerrado ahora. Abrimos a las ${hora12(h.apertura)}. Puedes programar tu pedido.` : `${sec} está cerrado ahora.`;
+      return h?.activo ? `${sec} está cerrado ahora. Abrimos a las ${hora12(h.apertura).replace(/\.$/, "")}. Puedes programar tu pedido.` : `${sec} está cerrado ahora.`;
     }
     return null;
   };
@@ -355,7 +360,9 @@ async function atender(req: Request): Promise<Response> {
   }
 
   // --- Totales (en centavos para no perder decimales) ---
-  const envio = tipo === "delivery" ? centavos(suc.tarifa_entrega) : 0;
+  // Envío gratis desde cierto monto en productos (ya con descuentos), si el admin lo activó.
+  const gratis = !!suc.envio_gratis_activo && subtotal >= centavos(suc.envio_gratis_desde);
+  const envio = tipo === "delivery" && !gratis ? centavos(suc.tarifa_entrega) : 0;
   const servicio = centavos(suc.cargo_servicio);
   // Propina para el motorizado (solo delivery, opcional, hasta $20).
   const propina = tipo === "delivery" ? centavos(Number(b.propina) || 0) : 0;
