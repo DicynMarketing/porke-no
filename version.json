@@ -1,1 +1,1 @@
-{"v": "0.8", "notes": ["El dueño crea su propio PIN en la primera tablet", "Botón para pasar el dispositivo principal a otro"]}
+{"v": "0.17.0", "cliente": ["🎁 Ahora el local te puede enviar regalos: descuentos o productos gratis", "🎟️ Tus regalos aparecen en Mi cuenta › Mis cupones y se usan al pagar"], "notes": ["Admin › Clientes: registro de todos tus clientes (fijos, los que más piden, los que más gastan y los que no vuelven)", "Admin › Clientes: toca un cliente para ver su historial y regalarle un % o $ de descuento, o un producto o combo gratis"]}

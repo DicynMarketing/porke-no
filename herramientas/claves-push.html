@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Claves de notificaciones</title>
+<style>
+:root{--bg:#0e0e0e;--card:#1b1b1b;--tx:#eee;--mu:#bbb;--ac:#f7a8d4;--ok:#3fe0a0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,sans-serif;padding:20px 16px}
+main{max-width:640px;margin:0 auto}
+h1{color:#ffc6e4;font-size:24px;margin:0 0 8px}
+p{color:var(--mu)}
+.card{background:var(--card);border:1px solid #333;border-radius:14px;padding:14px;margin:14px 0}
+label{display:block;font-weight:700;margin-bottom:6px}
+textarea{width:100%;background:#000;color:var(--ok);border:1px solid #444;border-radius:10px;padding:10px;font:14px monospace;resize:none}
+button{border:0;border-radius:12px;padding:12px 16px;font-weight:700;font-size:16px;cursor:pointer}
+.go{background:linear-gradient(180deg,#3fe0a0,#1aa56f);color:#04210f;width:100%}
+.cp{background:#2a2a2a;color:#ddd;margin-top:8px}
+.warn{border-color:var(--ac)}
+</style>
+</head>
+<body>
+<main>
+<h1>Claves de notificaciones (VAPID)</h1>
+<p>Esta página crea las dos claves en <b>tu propio navegador</b>. No se envían a ningún lado. Úsala una sola vez y cópialas en Supabase como dice la guía (<code>supabase/README.md</code>).</p>
+<button class="go" id="gen">Crear claves</button>
+<div id="out" hidden>
+  <div class="card">
+    <label>1 · VAPID_PUBLIC_KEY (pública)</label>
+    <textarea id="pub" rows="3" readonly></textarea>
+    <button class="cp" data-c="pub">Copiar clave pública</button>
+  </div>
+  <div class="card warn">
+    <label>2 · VAPID_PRIVATE_KEY (privada: solo va en Supabase › Secrets)</label>
+    <textarea id="priv" rows="2" readonly></textarea>
+    <button class="cp" data-c="priv">Copiar clave privada</button>
+    <p>No la pegues en el chat, en WhatsApp ni en el código. Si se pierde, crea claves nuevas y reemplaza las dos en Supabase.</p>
+  </div>
+</div>
+</main>
+<script>
+function b64u(buf){var s='',b=new Uint8Array(buf);for(var i=0;i<b.length;i++)s+=String.fromCharCode(b[i]);return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
+document.getElementById('gen').onclick=async function(){
+  var k=await crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']);
+  var raw=await crypto.subtle.exportKey('raw',k.publicKey),jwk=await crypto.subtle.exportKey('jwk',k.privateKey);
+  document.getElementById('pub').value=b64u(raw);document.getElementById('priv').value=jwk.d;
+  document.getElementById('out').hidden=false;this.textContent='Crear otras claves';
+};
+document.querySelectorAll('.cp').forEach(function(b){b.onclick=function(){var t=document.getElementById(b.dataset.c);t.select();
+  (navigator.clipboard?navigator.clipboard.writeText(t.value):Promise.reject()).catch(function(){document.execCommand('copy')});var o=b.textContent;b.textContent='✓ Copiada';setTimeout(function(){b.textContent=o},1500)}});
+</script>
+</body>
+</html>
