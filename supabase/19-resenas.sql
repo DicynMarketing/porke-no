@@ -1,0 +1,4 @@
+-- Porké No? · Paso 19: reseñas con comentario opcional (ya aplicado por Claude).
+-- Columnas pedidos.resena y resena_oculta; cliente_calificar(..., p_resena);
+-- resenas_publicas(p_sucursal) para el menú (solo primer nombre, 4-5 estrellas);
+-- admin_ocultar_resena(p_pedido, p_oculta). Ver historial de migraciones en Supabase.

@@ -1,7 +1,7 @@
 # Fase 1 · Conectar Porké No? a Supabase
 
 ## ✅ Lista de pendientes en Supabase (se actualiza en cada cambio)
-Última versión de la app: **0.14.0**. Haz solo lo que todavía no hayas hecho, en este orden:
+Última versión de la app: **0.15.0**. Haz solo lo que todavía no hayas hecho, en este orden:
 
 > **Avisos de versión (`version.json`):** `notes` = cambios del equipo (solo los ve la app del equipo). `cliente` = cambios para el cliente (se ven en las dos apps). Si `cliente` es `[]`, el cliente ve un mensaje general sin detalles; si no está, la app del cliente no avisa.
 
@@ -43,6 +43,8 @@
 | 32 | SQL `16-validaciones.sql` | SQL Editor › Run | ✅ Ya aplicado por Claude con el conector |
 | 33 | SQL `17-llegue-bloqueos-favoritos.sql` y `18-codigos-y-otra-persona.sql` | — | ✅ Aplicados por Claude (0.14.0) |
 | 34 | Funciones `crear-pedido` y `enviar-push` | — | ✅ Publicadas por Claude (0.14.0) |
+| 35 | SQL `19-resenas.sql` y `20-referidos.sql` | — | ✅ Aplicados por Claude (0.15.0) |
+| 36 | **Authentication › URL Configuration** | Agregar en *Redirect URLs*: `https://fase-1-pedidos-en-vivo.porke-no.pages.dev/**` | Lo hace el dueño (para recuperar contraseña del equipo) |
 
 
 En esta rama `index.html` ya apunta al proyecto de Supabase de Porké No?. Si `SB_URL` y `SB_KEY` quedan vacías, la app funciona igual que el prototipo.
