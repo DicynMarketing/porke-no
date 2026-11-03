@@ -351,6 +351,30 @@ async function atender(req: Request): Promise<Response> {
     subtotal -= codigo.descuento;
   }
 
+  // --- Regalo que el local le dio a este cliente (descuento o producto gratis) ---
+  let regalo: { id: string; descuento: number } | null = null;
+  if (typeof b.regalo === "string" && b.regalo) {
+    if (cupon || codigo) return fallo(400, "Usa un solo descuento por pedido: tu regalo, tu cupón o un código.");
+    const { data: g } = await db.from("regalos").select("*").eq("id", b.regalo).eq("cliente_id", user.id)
+      .eq("sucursal_id", suc.id).eq("estado", "disponible").maybeSingle();
+    if (!g || new Date(g.vence_en).getTime() < Date.now()) return fallo(409, "Tu regalo ya no está disponible. Revisa tu pedido.");
+    let d = 0;
+    if (g.tipo === "porcentaje") d = Math.round(subtotal * Number(g.valor) / 100);
+    else if (g.tipo === "monto") d = centavos(g.valor);
+    else {
+      // Producto o combo gratis: se descuenta su precio normal (si lo pide doble, el extra se cobra).
+      const it = items.find((x) => x.codigo === g.producto && !(x as { cupon?: boolean }).cupon);
+      if (!it) return fallo(400, `Agrega ${g.titulo.replace(/ GRATIS$/, "")} a tu pedido para usar tu regalo.`);
+      // Se descuenta el precio de UNA unidad tal como se cobra hoy (con promo si la tiene), sin el extra de doble.
+      const p = porCodigo.get(g.producto), c = combos.get(g.producto);
+      d = c ? centavos(c.precio)
+        : Math.round(it.precio_unitario * 100) - (it.doble && p?.extra_doble != null ? centavos(p.extra_doble) : 0);
+    }
+    d = Math.max(0, Math.min(d, subtotal));
+    regalo = { id: g.id, descuento: d };
+    subtotal -= d;
+  }
+
   // --- Freno a pedidos repetidos o de broma ---
   const hace10 = new Date(Date.now() - 10 * 60 * 1000).toISOString();
   const { count } = await db.from("pedidos").select("id", { count: "exact", head: true })
@@ -386,6 +410,17 @@ async function atender(req: Request): Promise<Response> {
     usoCodigo = u as number;
   }
 
+  // El regalo se aparta antes de guardar (si se usa en dos pedidos a la vez, solo uno lo logra).
+  if (regalo) {
+    const { data: ok } = await db.from("regalos").update({ estado: "usado", usado_en: new Date().toISOString() })
+      .eq("id", regalo.id).eq("estado", "disponible").select("id");
+    if (!ok?.length) {
+      if (cupon) await db.from("cupones").update({ estado: "disponible", usado_en: null }).eq("id", cupon);
+      if (usoCodigo) await db.rpc("soltar_codigo", { p_uso: usoCodigo });
+      return fallo(409, "Tu regalo ya no está disponible. Revisa tu pedido.");
+    }
+  }
+
   await db.from("clientes").upsert({ id: user.id, nombre, celular: telefono, correo }, { onConflict: "id" });
 
   const { data: pedido, error } = await db.from("pedidos").insert({
@@ -409,17 +444,20 @@ async function atender(req: Request): Promise<Response> {
     // 30 s para que el cliente pueda cancelar; después llega al local (liberar_pedidos_retenidos).
     retener_hasta: new Date(Date.now() + 30_000).toISOString(),
     recibe_nombre: recibeNombre, recibe_telefono: recibeTelefono,
-    descuento: codigo ? codigo.descuento / 100 : 0, codigo: codigo?.codigo ?? null,
+    descuento: codigo ? codigo.descuento / 100 : regalo ? regalo.descuento / 100 : 0, codigo: codigo?.codigo ?? null,
+    regalo_id: regalo?.id ?? null,
   }).select("*").single();
 
   if (error) {
     if (cupon) await db.from("cupones").update({ estado: "disponible", usado_en: null }).eq("id", cupon);
     if (usoCodigo) await db.rpc("soltar_codigo", { p_uso: usoCodigo });
+    if (regalo) await db.from("regalos").update({ estado: "disponible", usado_en: null }).eq("id", regalo.id);
     console.error("crear-pedido", error);
     await avisarError("crear-pedido", error, { paso: "guardar pedido" });
     return fallo(500, "No se pudo guardar el pedido. Intenta de nuevo.");
   }
   if (cupon) await db.from("cupones").update({ pedido_id: pedido.id }).eq("id", cupon);
   if (usoCodigo) await db.from("codigo_usos").update({ pedido_id: pedido.id }).eq("id", usoCodigo);
+  if (regalo) await db.from("regalos").update({ pedido_id: pedido.id }).eq("id", regalo.id);
   return json(200, { pedido });
 }

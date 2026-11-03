@@ -1,7 +1,7 @@
 # Fase 1 · Conectar Porké No? a Supabase
 
 ## ✅ Lista de pendientes en Supabase (se actualiza en cada cambio)
-Última versión de la app: **0.16.0**. Haz solo lo que todavía no hayas hecho, en este orden:
+Última versión de la app: **0.17.0**. Haz solo lo que todavía no hayas hecho, en este orden:
 
 > **Avisos de versión (`version.json`):** `notes` = cambios del equipo (solo los ve la app del equipo). `cliente` = cambios para el cliente (se ven en las dos apps). Si `cliente` es `[]`, el cliente ve un mensaje general sin detalles; si no está, la app del cliente no avisa.
 
@@ -46,6 +46,7 @@
 | 35 | SQL `19-resenas.sql` y `20-referidos.sql` | — | ✅ Aplicados por Claude (0.15.0) |
 | 37 | SQL `21-aviso-cada-10s.sql` (aviso al motorizado cada 10 s) | — | ✅ Aplicado por Claude (0.15.3) |
 | 38 | SQL `22-envio-gratis-feriados-banner.sql` y función `crear-pedido` v20 | — | ✅ Aplicados por Claude (0.16.0) |
+| 39 | SQL `23-clientes-y-regalos.sql`, `crear-pedido` v21 y `enviar-push` v13 | — | ✅ Aplicados por Claude (0.17.0) |
 | 36 | **Authentication › URL Configuration** | Agregar en *Redirect URLs*: `https://fase-1-pedidos-en-vivo.porke-no.pages.dev/**` | Lo hace el dueño (para recuperar contraseña del equipo) |
 
 

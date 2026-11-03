@@ -86,6 +86,14 @@ async function armar(db: any, f: Fila): Promise<Aviso | null> {
       title: f.datos.titulo || "🎉 Promoción en Porké No?", body: f.datos.texto || "",
     };
   }
+  if (f.tipo === "regalo") {
+    // Regalo personal del admin para un cliente: solo le llega a esa persona.
+    if (!f.datos.cliente) return null;
+    return {
+      usuarios: [f.datos.cliente], app: "cliente", tag: `regalo-${f.id}`, hash: "regalo", image: IMG("recibido"),
+      title: f.datos.titulo || "🎁 ¡Tienes un regalo!", body: f.datos.texto || "Abre la app para verlo",
+    };
+  }
   if (f.tipo === "solicitud") {
     const { data: sol } = await db.from("solicitudes_acceso").select("*").eq("id", f.solicitud_id).maybeSingle();
     if (!sol || sol.estado !== "pendiente") return null;
